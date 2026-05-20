@@ -8,6 +8,9 @@
       <div id="navMain" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item" v-if="session.user">
+            <router-link class="nav-link" to="/swipe">Discover</router-link>
+          </li>
+          <li class="nav-item" v-if="session.user">
             <router-link class="nav-link" to="/search">Search</router-link>
           </li>
           <li class="nav-item" v-if="session.user">
