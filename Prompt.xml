@@ -1,0 +1,251 @@
+<PROJECT>
+    <NAME>Matcha Dating Web App</NAME>
+    <VERSION>6.0</VERSION>
+    <TYPE>Fullstack Web Application</TYPE>
+    <GOAL>
+        Build a complete dating website from scratch that connects users from registration to real-life meeting.
+        The application MUST be production-ready, secure, mobile responsive and contain NO warnings or errors.
+    </GOAL>
+</PROJECT>
+
+<GLOBAL_RULES>
+    <NO_ERRORS_OR_WARNINGS>true</NO_ERRORS_OR_WARNINGS>
+    <SECURITY_IS_CRITICAL>true</SECURITY_IS_CRITICAL>
+    <MOBILE_FRIENDLY>true</MOBILE_FRIENDLY>
+    <COMPATIBLE_BROWSERS>Latest Chrome + Firefox</COMPATIBLE_BROWSERS>
+    <LAYOUT>
+        <HEADER>true</HEADER>
+        <MAIN>true</MAIN>
+        <FOOTER>true</FOOTER>
+    </LAYOUT>
+</GLOBAL_RULES>
+
+<TECH_STACK_CONSTRAINTS>
+    <BACKEND>
+        Use a micro-framework only.
+        Allowed examples: Express, Flask, Sinatra, Scalatra, Slim, Goji, Spark, Crow.
+        No full frameworks with ORM or user management built-in.
+    </BACKEND>
+
+    <DATABASE>
+        Must be relational or graph DB.
+        Allowed: PostgreSQL, MySQL, MariaDB, Neo4j, Cassandra, InfluxDB.
+        Queries MUST be written manually (no ORM).
+        Database must contain at least 500 generated user profiles for evaluation.
+    </DATABASE>
+
+    <FRONTEND>
+        Allowed: React / Vue / Angular / Bootstrap / Semantic UI or combination.
+    </FRONTEND>
+
+    <SERVER>
+        Apache, Nginx or built-in server allowed.
+    </SERVER>
+</TECH_STACK_CONSTRAINTS>
+
+<SECURITY_REQUIREMENTS>
+    <PASSWORDS>
+        Must be hashed (bcrypt or argon2).
+        Never store plain passwords.
+        Reject common passwords.
+    </PASSWORDS>
+
+    <PROTECTIONS>
+        <SQL_INJECTION>true</SQL_INJECTION>
+        <XSS>true</XSS>
+        <CSRF>true</CSRF>
+        <FILE_UPLOAD_VALIDATION>true</FILE_UPLOAD_VALIDATION>
+        <SANITIZE_ALL_INPUTS>true</SANITIZE_ALL_INPUTS>
+    </PROTECTIONS>
+
+    <ENVIRONMENT_VARIABLES>
+        Store all secrets in .env file.
+        .env must be excluded from git.
+    </ENVIRONMENT_VARIABLES>
+</SECURITY_REQUIREMENTS>
+
+<CORE_FEATURES>
+
+    <AUTHENTICATION>
+        <REGISTER>
+            Required fields:
+            - email
+            - username
+            - first name
+            - last name
+            - secure password
+
+            After registration:
+            Send email verification link with unique token.
+        </REGISTER>
+
+        <LOGIN>
+            Login via username + password.
+            Logout available from any page.
+        </LOGIN>
+
+        <PASSWORD_RESET>
+            Send reset email with secure token.
+        </PASSWORD_RESET>
+    </AUTHENTICATION>
+
+    <USER_PROFILE>
+        Required editable fields:
+        - gender
+        - sexual orientation
+        - biography
+        - interests as reusable tags (#vegan #geek etc)
+        - up to 5 photos
+        - 1 main profile photo
+
+        Users can update:
+        - email
+        - first name
+        - last name
+        - location
+
+        Features:
+        - see who viewed profile
+        - see who liked profile
+        - public popularity score
+    </USER_PROFILE>
+
+    <LOCATION_SYSTEM>
+        Use GPS with user consent.
+        If refused:
+            user must manually input city/area.
+        User can edit location anytime.
+    </LOCATION_SYSTEM>
+
+    <MATCHING_ALGORITHM>
+        Must suggest profiles based on:
+        - sexual orientation compatibility
+        - geographic proximity (priority)
+        - number of shared tags
+        - popularity score
+
+        Default orientation if unspecified: bisexual.
+
+        Suggested profiles must be:
+        - sortable by age, location, popularity, tags
+        - filterable by same criteria
+    </MATCHING_ALGORITHM>
+
+    <ADVANCED_SEARCH>
+        Filters:
+        - age range
+        - popularity range
+        - location
+        - tags
+
+        Results must be sortable + filterable.
+    </ADVANCED_SEARCH>
+
+    <PROFILE_VIEW>
+        Show all info except email/password.
+
+        Must track:
+        - profile visit history
+
+        Actions:
+        - Like profile photo (requires own photo)
+        - Unlike profile
+        - Show popularity score
+        - Show online status / last seen
+        - Report fake account
+        - Block user (removes from search + chat)
+
+        Show clearly:
+        - if liked
+        - if matched
+    </PROFILE_VIEW>
+
+    <MATCH_SYSTEM>
+        Match occurs when 2 users like each other.
+        Only matched users can chat.
+        If unlike -> chat disabled.
+    </MATCH_SYSTEM>
+
+    <REALTIME_CHAT>
+        Real-time messaging between matched users.
+        Max delay: 10 seconds.
+        New message indicator visible from any page.
+    </REALTIME_CHAT>
+
+    <REALTIME_NOTIFICATIONS>
+        Notify when:
+        - receive like
+        - profile viewed
+        - new message
+        - mutual like (match)
+        - someone unlikes you
+
+        Must appear within 10 seconds.
+        Must be visible from any page.
+        Must track unread notifications.
+    </REALTIME_NOTIFICATIONS>
+
+</CORE_FEATURES>
+
+<POPULARITY_SCORE>
+    You must define a consistent algorithm.
+    Suggested formula:
+        + profile views
+        + likes received
+        + matches
+        + activity level
+</POPULARITY_SCORE>
+
+<DATABASE_SCHEMA_MINIMUM>
+    Tables required:
+    - users
+    - email_verification_tokens
+    - password_reset_tokens
+    - profiles
+    - photos
+    - tags
+    - user_tags
+    - likes
+    - matches
+    - messages
+    - notifications
+    - profile_views
+    - blocks
+    - reports
+</DATABASE_SCHEMA_MINIMUM>
+
+<UI_REQUIREMENTS>
+    Must be:
+    - modern
+    - responsive
+    - intuitive
+    - mobile friendly
+</UI_REQUIREMENTS>
+
+<BONUS_FEATURES>
+    Implement only AFTER core is perfect:
+    - OAuth login (Google, 42, GitHub)
+    - Drag & drop photo gallery
+    - Basic image editing (crop/rotate/filter)
+    - Interactive map of users
+    - Audio/video chat
+    - Real-life dating event planner
+</BONUS_FEATURES>
+
+<EVALUATION_RULES>
+    Project fails if:
+    - any security vulnerability exists
+    - any warning/error appears in console
+    - mandatory features missing
+</EVALUATION_RULES>
+
+<DELIVERABLE>
+    Generate FULL project including:
+    - backend API
+    - frontend UI
+    - database schema + seed (500 users)
+    - authentication flows
+    - matching algorithm
+    - realtime chat + notifications
+    - deployment instructions
+</DELIVERABLE>
