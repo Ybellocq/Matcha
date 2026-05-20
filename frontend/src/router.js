@@ -8,6 +8,7 @@ import ResetPassword from './pages/ResetPassword.vue';
 import Profile from './pages/Profile.vue';
 import UserProfile from './pages/UserProfile.vue';
 import Search from './pages/Search.vue';
+import Swipe from './pages/Swipe.vue';
 import Matches from './pages/Matches.vue';
 import Chat from './pages/Chat.vue';
 import Notifications from './pages/Notifications.vue';
@@ -24,6 +25,7 @@ const router = createRouter({
     { path: '/profile', component: Profile },
     { path: '/users/:username', component: UserProfile },
     { path: '/search', component: Search },
+    { path: '/swipe', component: Swipe },
     { path: '/matches', component: Matches },
     { path: '/chat/:username?', component: Chat },
     { path: '/notifications', component: Notifications }

@@ -1,7 +1,1 @@
-backend/vendor/
-backend/.env
-backend/public/uploads/
-backend/storage/
-frontend/node_modules/
-frontend/dist/
-.DS_Store
+(frontend/src/pages/Swipe.vue)
