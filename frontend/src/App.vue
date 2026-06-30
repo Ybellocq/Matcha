@@ -3,6 +3,12 @@
   <main :class="{ 'main-guest': !session.user, 'main-auth': session.user }">
     <router-view />
   </main>
+  <footer class="app-footer">
+    <div class="container">
+      <span class="footer-brand">🔥 matcha</span>
+      <span class="footer-text">© 2025 · Made with love (and algorithms)</span>
+    </div>
+  </footer>
 </template>
 
 <script setup>
@@ -87,4 +93,33 @@ body {
 .bg-primary { background: linear-gradient(135deg, #fd297b, #ff655b) !important; }
 .badge.bg-warning { background: #f59e0b !important; }
 .badge.bg-info { background: #fd297b !important; }
+
+.app-footer {
+  background: #fff;
+  border-top: 1px solid #f3f4f6;
+  padding: 16px 0;
+  text-align: center;
+  margin-top: auto;
+}
+
+.app-footer .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-brand {
+  font-weight: 700;
+  background: linear-gradient(135deg, #fd297b, #ff655b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.footer-text {
+  color: #999;
+  font-size: 0.8rem;
+}
 </style>

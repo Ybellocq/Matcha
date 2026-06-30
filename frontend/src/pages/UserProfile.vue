@@ -99,6 +99,10 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Chat
         </button>
+        <button v-if="matched" class="action-btn action-btn--unmatch" @click="unmatch">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4m0-4l-4 4M3 21l8-8m0 0l8-8m-8 8l-8 8m8-8l8 8"/></svg>
+          Unmatch
+        </button>
         <button class="action-btn action-btn--report" @click="report">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
           Report
@@ -158,6 +162,12 @@ async function like() {
 
 async function unlike() {
   await api(`/profile/${route.params.username}/unlike`, { method: 'POST' });
+  await loadProfile();
+}
+
+async function unmatch() {
+  if (!confirm('Unmatch this user? Your chat will be deleted.')) return;
+  await api(`/profile/${route.params.username}/unmatch`, { method: 'POST' });
   await loadProfile();
 }
 
@@ -469,6 +479,11 @@ function formatDate(dateStr) {
 .action-btn--block {
   background: #fefce8;
   color: #ca8a04;
+}
+
+.action-btn--unmatch {
+  background: #fdf2f8;
+  color: #db2777;
 }
 
 @media (max-width: 480px) {

@@ -577,6 +577,27 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
             return jsonResponse($response, ['status' => 'unliked']);
         });
 
+        $group->post('/profile/{username}/unmatch', function (Request $request, Response $response, array $args) use ($notifications): Response {
+            $userId = currentUserId();
+            $username = strtolower((string) $args['username']);
+            $stmt = db()->prepare('SELECT id FROM users WHERE username = :username');
+            $stmt->execute([':username' => $username]);
+            $targetId = $stmt->fetchColumn();
+            if (!$targetId) {
+                return jsonResponse($response, ['error' => 'Invalid target'], 404);
+            }
+
+            $a = min($userId, (int) $targetId);
+            $b = max($userId, (int) $targetId);
+            $stmt = db()->prepare('DELETE FROM matches WHERE user_one_id = :a AND user_two_id = :b');
+            $stmt->execute([':a' => $a, ':b' => $b]);
+            $notifications->notify((int) $targetId, 'unmatch', $userId);
+            updatePopularityScore((int) $targetId);
+            updatePopularityScore($userId);
+
+            return jsonResponse($response, ['status' => 'unmatched']);
+        });
+
         $group->post('/profile/{username}/block', function (Request $request, Response $response, array $args): Response {
             $userId = currentUserId();
             $username = strtolower((string) $args['username']);

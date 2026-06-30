@@ -109,11 +109,34 @@ function hashToken(string $token): string
 
 function isCommonPassword(string $password): bool
 {
+    $lower = strtolower($password);
     $common = [
-        'password', '123456', '123456789', 'qwerty', '111111',
-        '12345678', 'abc123', 'password1', '123123', 'letmein'
+        'password', 'password1', 'password123', '123456', '1234567', '12345678',
+        '123456789', '1234567890', 'qwerty', 'qwerty123', '111111', '11111111',
+        'abc123', '123123', 'letmein', 'iloveyou', 'monkey', 'dragon',
+        'master', 'football', 'baseball', 'sunshine', 'princess', 'shadow',
+        'trustno1', 'admin', 'welcome', 'login', 'starwars', 'access',
+        'flower', 'hello', 'passw0rd', 'charlie', 'donald', 'superman',
+        'batman', 'hottie', 'whatever', 'michael', 'ashley', 'nicole',
+        'daniel', 'jessica', 'andrew', 'joshua', 'matthew', 'anthony',
     ];
-    return in_array(strtolower($password), $common, true);
+    if (in_array($lower, $common, true)) {
+        return true;
+    }
+    
+    $words = [
+        'password', 'admin', 'login', 'welcome', 'master', 'access',
+        'secret', 'test', 'user', 'guest', 'hello', 'love'
+    ];
+    foreach ($words as $word) {
+        if ($lower === $word || $lower === $word . '123' || $lower === $word . '1234'
+            || $lower === $word . '12345' || $lower === $word . '!'
+            || $lower === $word . '@' || $lower === '123' . $word) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 function nowUtc(): string
