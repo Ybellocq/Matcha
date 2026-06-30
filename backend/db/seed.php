@@ -5,10 +5,19 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use function App\nowUtc;
 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->safeLoad();
+
+$host = $_ENV['DB_HOST'] ?? 'localhost';
+$port = $_ENV['DB_PORT'] ?? '5432';
+$name = $_ENV['DB_NAME'] ?? 'matcha';
+$user = $_ENV['DB_USER'] ?? 'matcha';
+$pass = $_ENV['DB_PASS'] ?? 'matcha';
+
 $pdo = new \PDO(
-    'pgsql:host=localhost;port=5432;dbname=matcha',
-    'admin',
-    'matcha',
+    "pgsql:host={$host};port={$port};dbname={$name}",
+    $user,
+    $pass,
     [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC]
 );
 

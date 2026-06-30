@@ -527,6 +527,7 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
                 updatePopularityScore((int) $targetId);
             }
 
+            $matched = false;
             $matchStmt = db()->prepare('SELECT 1 FROM likes WHERE liker_id = :other AND liked_id = :me');
             $matchStmt->execute([':me' => $userId, ':other' => $targetId]);
             if ($matchStmt->fetch()) {
@@ -544,10 +545,11 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
                     $notifications->notify($userId, 'match', (int) $targetId);
                     updatePopularityScore((int) $targetId);
                     updatePopularityScore($userId);
+                    $matched = true;
                 }
             }
 
-            return jsonResponse($response, ['status' => 'liked']);
+            return jsonResponse($response, ['status' => 'liked', 'matched' => $matched]);
         });
 
         $group->post('/profile/{username}/unlike', function (Request $request, Response $response, array $args) use ($notifications): Response {

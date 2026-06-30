@@ -1,4 +1,6 @@
-# Matcha Dating Web App
+# 🔥 Matcha — Dating Web App
+
+Tinder-like dating application built with **Vue 3 + PHP/Slim + PostgreSQL**.
 
 ## Requirements
 - PHP 8.1+
@@ -6,50 +8,52 @@
 - Node.js 18+
 - PostgreSQL 14+
 
-## Backend setup
-1. Create a database (example: `matcha`) and user.
-2. Copy environment file:
-   ```bash
-   cd backend
-   cp .env.example .env
-   ```
-3. Install dependencies:
-   ```bash
-   composer install
-   ```
-4. Create schema:
-   ```bash
-   psql -U matcha -d matcha -f db/schema.sql
-   ```
-5. Seed 500 users:
-   ```bash
-   php db/seed.php
-   ```
-6. Start API server:
-   ```bash
-   composer start
-   ```
+## Quick start
 
-## Frontend setup
-1. Install dependencies:
-   ```bash
-   cd frontend
-   npm install
-   ```
-2. Start dev server:
-   ```bash
-   npm run dev
-   ```
-3. Set API URL if needed:
-   ```bash
-   export VITE_API_URL=http://localhost:8000
-   ```
+### Backend
+```bash
+cd backend
+cp .env.example .env         # Edit DB credentials if needed
+composer install
+psql -U postgres -c "CREATE DATABASE matcha"
+psql -U postgres -d matcha -f db/schema.sql
+php db/seed.php               # Creates 500 fake users
+composer start                # Runs on localhost:8000
+```
 
-## Mail configuration
-- Default `MAIL_MODE=log` writes emails to `backend/storage/logs/mail.log`.
-- For SMTP, set `MAIL_MODE=smtp` and provide SMTP credentials in `.env`.
+### Frontend
+```bash
+cd frontend
+cp .env.example .env          # Edit VITE_API_URL if backend is not on :8000
+npm install
+npm run dev                   # Runs on localhost:5173
+```
 
-## Notes
-- Uploads are saved under `backend/public/uploads/`.
-- The frontend uses polling every 5 seconds for chat and notifications to meet the 10-second requirement.
-- Popularity score formula: `views + (likes * 2) + (matches * 3) + activity` where activity is `5` if active in the last day, otherwise `1`.
+## Email
+- `MAIL_MODE=log` → emails written to `backend/storage/logs/mail.log`
+- `MAIL_MODE=smtp` → set SMTP credentials in `backend/.env`
+
+## Features
+- 🔥 Tinder-style swipe UI with drag gestures
+- 💘 Real-time matching with "It's a Match!" animation
+- 💬 Real-time chat between matched users (polling ≤ 5s)
+- 🔔 Real-time notifications (like, view, message, match, unmatch)
+- 📍 GPS geolocation with manual city input
+- 📸 Photo upload (up to 5, with main photo selection)
+- 🏷️ Interest tags with smart suggestions
+- 🔍 Advanced search with age, popularity, distance, and tag filters
+- 👁️ Profile view tracking with popularity score
+- 🚫 Block & report users
+- 📱 Fully responsive (mobile-first)
+
+## Popularity formula
+`views + (likes × 2) + (matches × 3) + activity`
+where `activity = 5` if active in the last 24h, else `1`.
+
+## Security
+- Passwords hashed with bcrypt
+- All queries use prepared statements (no SQL injection)
+- Input sanitization (strip_tags)
+- CSRF protection on all mutating endpoints
+- CORS with explicit origin whitelist
+- Email verification + password reset tokens (hashed, time-limited)
