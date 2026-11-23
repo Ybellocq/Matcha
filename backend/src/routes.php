@@ -813,7 +813,7 @@ HTML;
                 return jsonResponse($response, ['error' => 'File too large'], 422);
             }
 
-            $uploadDir = __DIR__ . '/../../public/uploads';
+            $uploadDir = __DIR__ . '/../public/uploads';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0755, true);
             }
