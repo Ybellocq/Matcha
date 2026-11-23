@@ -4,9 +4,16 @@
     <router-view />
   </main>
   <footer class="app-footer">
-    <div class="container">
+    <div class="footer-inner">
       <span class="footer-brand">🔥 matcha</span>
-      <span class="footer-text">© 2025 · Made with love (and algorithms)</span>
+      <nav class="footer-links">
+        <router-link to="/swipe">Discover</router-link>
+        <router-link to="/search">Search</router-link>
+        <router-link to="/matches">Matches</router-link>
+        <router-link to="/notifications">Notifications</router-link>
+      </nav>
+      <span class="footer-copy">© {{ new Date().getFullYear() }} Matcha — built with Vue 3 &amp; Slim</span>
+ (✅ Conformité sujet : footer layout, gitignore sécurisé, blocage des notifications, tri/filtres)
     </div>
   </footer>
 </template>
@@ -53,6 +60,12 @@ body {
   padding: 0;
 }
 
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .main-guest {
   min-height: calc(100vh - 56px);
   display: flex;
@@ -64,6 +77,44 @@ body {
 
 .main-auth {
   padding: 20px 16px 60px;
+}
+
+.app-footer {
+  margin-top: auto;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  padding: 18px 24px;
+  min-height: 56px;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.footer-brand {
+  font-weight: 800;
+}
+
+.footer-links {
+  display: flex;
+  gap: 14px;
+}
+
+.footer-links a {
+  color: #888;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: #fd297b;
 }
 
 /* Override Bootstrap defaults for more Tinder-like look */

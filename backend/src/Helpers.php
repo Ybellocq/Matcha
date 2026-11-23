@@ -111,32 +111,48 @@ function isCommonPassword(string $password): bool
 {
     $lower = strtolower($password);
     $common = [
-        'password', 'password1', 'password123', '123456', '1234567', '12345678',
-        '123456789', '1234567890', 'qwerty', 'qwerty123', '111111', '11111111',
-        'abc123', '123123', 'letmein', 'iloveyou', 'monkey', 'dragon',
-        'master', 'football', 'baseball', 'sunshine', 'princess', 'shadow',
-        'trustno1', 'admin', 'welcome', 'login', 'starwars', 'access',
-        'flower', 'hello', 'passw0rd', 'charlie', 'donald', 'superman',
-        'batman', 'hottie', 'whatever', 'michael', 'ashley', 'nicole',
-        'daniel', 'jessica', 'andrew', 'joshua', 'matthew', 'anthony',
+'password', 'password1', 'password123', 'passw0rd', 'password!',
+        '123456', '1234567', '12345678', '123456789', '1234567890',
+        '123123', '112233', '111111', '121212', '123321', '654321',
+        'qwerty', 'qwerty123', 'qwertyuiop', 'qazwsx', 'qaz123',
+        'abc123', 'abc123456', '1q2w3e4r', '1qaz2wsx', 'zaq12wsx',
+        'letmein', 'welcome', 'welcome1', 'welcome123', 'admin',
+        'admin123', 'administrator', 'root', 'toor', 'login',
+        'iloveyou', 'monkey', 'dragon', 'football', 'baseball',
+        'basketball', 'soccer', 'hockey', 'baseball1', 'master',
+        'sunshine', 'princess', 'superman', 'batman', 'spiderman',
+        'starwars', 'harrypotter', 'shadow', 'michael', 'jennifer',
+        'jordan', 'harley', 'ranger', 'buster', 'thomas', 'tigger',
+        'purple', 'trustno1', 'freedom', 'whatever', 'access',
+        'hello', 'hello123', 'chocolate', 'cookie', 'money', 'diamond',
+        'summer', 'winter', 'spring', 'autumn', 'january', 'february',
+        'march', 'april', 'june', 'july', 'august', 'september',
+        'october', 'november', 'december', 'lovely', 'loveme', 'lovers',
+        'angel', 'angela', 'nicole', 'daniel', 'jessica', 'andrew',
+        'joshua', 'matthew', 'anthony', 'ashley', 'bailey', 'charlie',
+        'donald', 'flower', 'hottie', 'secret', 'soccer1', 'internet',
+        'samsung', 'google', 'computer', 'laptop', 'test', 'test123',
+        'guest', 'user', 'default', 'sample', 'example', 'asdasd',
+        'asdfgh', 'zxcvbnm', 'nothing', 'nobody', 'system', 'server',
+        'matcha', 'tinder'
     ];
+    $lower = strtolower($password);
+
     if (in_array($lower, $common, true)) {
         return true;
     }
-    
-    $words = [
-        'password', 'admin', 'login', 'welcome', 'master', 'access',
-        'secret', 'test', 'user', 'guest', 'hello', 'love'
-    ];
+
+    // Mots anglais courants + variantes (word123, word!, 123word…)
+    $words = ['password', 'admin', 'login', 'welcome', 'master', 'access', 'secret', 'love'];
     foreach ($words as $word) {
         if ($lower === $word || $lower === $word . '123' || $lower === $word . '1234'
-            || $lower === $word . '12345' || $lower === $word . '!'
-            || $lower === $word . '@' || $lower === '123' . $word) {
+            || $lower === $word . '12345' || $lower === $word . '!' || $lower === $word . '@'
+            || $lower === '123' . $word) {
             return true;
         }
     }
-    
-    return false;
+
+    return str_contains($lower, 'password') || str_contains($lower, 'qwerty');
 }
 
 function nowUtc(): string

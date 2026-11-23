@@ -395,6 +395,8 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
                  FROM profile_views v
                  JOIN users u ON u.id = v.viewer_id
                  WHERE v.viewed_id = :id
+                   AND v.viewer_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = :id)
+                   AND v.viewer_id NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = :id)
                  ORDER BY v.created_at DESC'
             );
             $stmt->execute([':id' => $userId]);
@@ -408,6 +410,8 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
                  FROM likes l
                  JOIN users u ON u.id = l.liker_id
                  WHERE l.liked_id = :id
+                   AND l.liker_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = :id)
+                   AND l.liker_id NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = :id)
                  ORDER BY l.created_at DESC'
             );
             $stmt->execute([':id' => $userId]);
@@ -446,17 +450,24 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
             }
 
             if ((int) $profile['id'] !== $userId) {
-                $stmt = db()->prepare(
-                    'INSERT INTO profile_views (viewer_id, viewed_id, created_at)
-                     VALUES (:viewer_id, :viewed_id, :created_at)'
+                $blockStmt = db()->prepare(
+                    'SELECT 1 FROM blocks WHERE (blocker_id = :me AND blocked_id = :other)
+                       OR (blocker_id = :other AND blocked_id = :me)'
                 );
-                $stmt->execute([
-                    ':viewer_id' => $userId,
-                    ':viewed_id' => $profile['id'],
-                    ':created_at' => nowUtc()
-                ]);
-                $notifications->notify((int) $profile['id'], 'view', $userId);
-                updatePopularityScore((int) $profile['id']);
+                $blockStmt->execute([':me' => $userId, ':other' => $profile['id']]);
+                if (!$blockStmt->fetch()) {
+                    $stmt = db()->prepare(
+                        'INSERT INTO profile_views (viewer_id, viewed_id, created_at)
+                         VALUES (:viewer_id, :viewed_id, :created_at)'
+                    );
+                    $stmt->execute([
+                        ':viewer_id' => $userId,
+                        ':viewed_id' => $profile['id'],
+                        ':created_at' => nowUtc()
+                    ]);
+                    $notifications->notify((int) $profile['id'], 'view', $userId);
+                    updatePopularityScore((int) $profile['id']);
+                }
             }
 
             $photos = db()->prepare('SELECT id, path, is_main FROM photos WHERE user_id = :id ORDER BY is_main DESC, id ASC');
@@ -892,6 +903,19 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
             $userId = currentUserId();
             $query = getSanitizedQuery($request);
 
+            $ageMin = isset($query['age_min']) && $query['age_min'] !== '' ? (int) $query['age_min'] : null;
+            $ageMax = isset($query['age_max']) && $query['age_max'] !== '' ? (int) $query['age_max'] : null;
+            $popMin = isset($query['popularity_min']) && $query['popularity_min'] !== '' ? (int) $query['popularity_min'] : null;
+            $popMax = isset($query['popularity_max']) && $query['popularity_max'] !== '' ? (int) $query['popularity_max'] : null;
+            $distanceMax = isset($query['distance_km']) && $query['distance_km'] !== '' ? (float) $query['distance_km'] : null;
+            $locationCity = isset($query['location']) && $query['location'] !== '' ? strtolower((string) $query['location']) : null;
+            $tagFilter = [];
+            if (isset($query['tags']) && $query['tags'] !== '') {
+                $tagFilter = is_array($query['tags'])
+                    ? array_filter(array_map(fn ($t) => strtolower(trim((string) $t)), $query['tags']))
+                    : array_filter(array_map(fn ($t) => strtolower(trim($t)), explode(',', (string) $query['tags'])));
+            }
+
             $stmt = db()->prepare(
                 'SELECT p.user_id, u.username, u.first_name, u.last_name, p.gender, p.orientation, p.birthdate,
                         p.location_lat, p.location_lng, p.location_city, p.popularity_score, p.main_photo_id,
@@ -913,6 +937,7 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
             $tagStmt = db()->prepare('SELECT t.name FROM tags t JOIN user_tags ut ON ut.tag_id = t.id WHERE ut.user_id = :id');
             $tagStmt->execute([':id' => $userId]);
             $myTags = array_column($tagStmt->fetchAll(), 'name');
+            $myTagSet = array_flip($myTags);
 
             $results = [];
             foreach ($candidates as $candidate) {
@@ -945,12 +970,56 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
                 );
                 $tagStmt->execute([':id' => $candidate['user_id']]);
                 $theirTags = array_column($tagStmt->fetchAll(), 'name');
-                $sharedTags = count(array_intersect($myTags, $theirTags));
+                $sharedTags = count(array_intersect_key($myTagSet, array_flip($theirTags)));
 
-                $score = (int) $candidate['popularity_score'] + ($sharedTags * 10);
-                if ($distance !== null) {
-                    $score += max(0, 100 - (int) $distance);
+                // Filters
+                if ($candidate['birthdate']) {
+                    $age = (int) floor((time() - strtotime($candidate['birthdate'])) / 31557600);
+                    if ($ageMin !== null && $age < $ageMin) {
+                        continue;
+                    }
+                    if ($ageMax !== null && $age > $ageMax) {
+                        continue;
+                    }
                 }
+                if ($popMin !== null && (int) $candidate['popularity_score'] < $popMin) {
+                    continue;
+                }
+                if ($popMax !== null && (int) $candidate['popularity_score'] > $popMax) {
+                    continue;
+                }
+                if ($locationCity !== null) {
+                    if ($candidate['location_city'] === null
+                        || stripos((string) $candidate['location_city'], $locationCity) === false) {
+                        continue;
+                    }
+                }
+                if ($distanceMax !== null) {
+                    if ($distance === null || $distance > $distanceMax) {
+                        continue;
+                    }
+                }
+                if ($tagFilter !== [] && count(array_intersect($tagFilter, $theirTags)) === 0) {
+                    continue;
+                }
+
+                // Geographic area takes priority: users in the same zone
+                // always outrank distant ones via distance buckets.
+                if ($distance === null) {
+                    $bucket = 25;
+                } elseif ($distance <= 10) {
+                    $bucket = 300;
+                } elseif ($distance <= 50) {
+                    $bucket = 200;
+                } elseif ($distance <= 200) {
+                    $bucket = 100;
+                } elseif ($distance <= 500) {
+                    $bucket = 40;
+                } else {
+                    $bucket = 0;
+                }
+                $popularity = min(100, (int) $candidate['popularity_score']);
+                $score = $bucket + ($sharedTags * 10) + $popularity;
 
                 $results[] = [
                     'profile' => $candidate,
@@ -1002,6 +1071,11 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
             $meStmt->execute([':id' => $userId]);
             $me = $meStmt->fetch();
 
+            $myTagStmt = db()->prepare('SELECT t.name FROM tags t JOIN user_tags ut ON ut.tag_id = t.id WHERE ut.user_id = :id');
+            $myTagStmt->execute([':id' => $userId]);
+            $myTags = array_column($myTagStmt->fetchAll(), 'name');
+            $myTagSet = array_flip($myTags);
+
             $results = [];
             foreach ($candidates as $candidate) {
                 if ($locationCity && $candidate['location_city']) {
@@ -1051,8 +1125,16 @@ return function (App $app, Mailer $mailer, NotificationService $notifications): 
                     if (count($shared) === 0) {
                         continue;
                     }
+                } else {
+                    $tagStmt = db()->prepare(
+                        'SELECT t.name FROM tags t JOIN user_tags ut ON ut.tag_id = t.id WHERE ut.user_id = :id'
+                    );
+                    $tagStmt->execute([':id' => $candidate['user_id']]);
+                    $theirTags = array_column($tagStmt->fetchAll(), 'name');
                 }
 
+                $sharedTags = count(array_intersect_key($myTagSet, array_flip($theirTags)));
+                $candidate['shared_tags'] = $sharedTags;
                 $results[] = $candidate;
             }
 

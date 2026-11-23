@@ -1,7 +1,61 @@
 <template>
   <div class="swipe-page">
-    <h2 class="swipe-title">Discover</h2>
-    
+    <div class="swipe-topbar">
+      <h2 class="swipe-title">Discover</h2>
+      <button class="filter-toggle" @click="showFilters = !showFilters">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        Filters
+      </button>
+    </div>
+
+    <div v-if="showFilters" class="filter-panel">
+      <div class="filter-row">
+        <label>
+          Sort by
+          <select v-model="sortBy" class="filter-input">
+            <option value="smart">Smart score</option>
+            <option value="distance">Distance</option>
+            <option value="age">Age</option>
+            <option value="popularity">Popularity</option>
+            <option value="sharedTags">Common tags</option>
+          </select>
+        </label>
+        <label>
+          Age min
+          <input v-model.number="filters.age_min" type="number" min="18" class="filter-input" />
+        </label>
+        <label>
+          Age max
+          <input v-model.number="filters.age_max" type="number" class="filter-input" />
+        </label>
+      </div>
+      <div class="filter-row">
+        <label>
+          Popularity min
+          <input v-model.number="filters.popularity_min" type="number" class="filter-input" />
+        </label>
+        <label>
+          Popularity max
+          <input v-model.number="filters.popularity_max" type="number" class="filter-input" />
+        </label>
+        <label>
+          Distance max (km)
+          <input v-model.number="filters.distance_km" type="number" class="filter-input" />
+        </label>
+      </div>
+      <div class="filter-row">
+        <label>
+          City
+          <input v-model="filters.location" class="filter-input" placeholder="Paris" />
+        </label>
+        <label>
+          Tags (comma separated)
+          <input v-model="filters.tags" class="filter-input" placeholder="#vegan, #geek" />
+        </label>
+      </div>
+      <button class="btn btn-danger rounded-pill px-4 apply-btn" @click="loadProfiles">Apply</button>
+    </div>
+
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
     
     <!-- Loading -->
@@ -121,7 +175,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { api, API_URL } from '../api.js';
 
@@ -132,6 +186,18 @@ const currentIndex = ref(0);
 const loading = ref(true);
 const error = ref('');
 const myPhotoUrl = ref('');
+const myProfile = ref(null);
+const sortBy = ref('smart');
+const showFilters = ref(false);
+const filters = reactive({
+  age_min: null,
+  age_max: null,
+  popularity_min: null,
+  popularity_max: null,
+  distance_km: null,
+  location: '',
+  tags: ''
+});
 
 // Swipe state
 const swipeX = ref(0);
@@ -153,9 +219,15 @@ async function loadProfiles() {
   error.value = '';
   try {
     const me = await api('/profile/me');
+    myProfile.value = me.profile || null;
     myPhotoUrl.value = me.photos?.[0]?.path ? photoUrlRaw(me.photos[0].path) : '';
-    
-    const data = await api('/search/suggestions');
+
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value !== null && value !== '') params.append(key, value);
+    }
+    const query = params.toString();
+    const data = await api(`/search/suggestions${query ? `?${query}` : ''}`);
     profiles.value = (data.results || []).map((p) => ({
       ...p.profile,
       ...p,
@@ -208,8 +280,30 @@ function isOnline(profile) {
   return diff < 10 * 60 * 1000;
 }
 
-const currentProfile = computed(() => profiles.value[currentIndex.value] || null);
-const nextProfile = computed(() => profiles.value[currentIndex.value + 1] || null);
+const sortedProfiles = computed(() => {
+  const list = [...profiles.value];
+  if (sortBy.value === 'distance') {
+    list.sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
+  } else if (sortBy.value === 'age') {
+    list.sort((a, b) => (age(a.birthdate) ?? Infinity) - (age(b.birthdate) ?? Infinity));
+  } else if (sortBy.value === 'popularity') {
+    list.sort((a, b) => (b.popularity_score || 0) - (a.popularity_score || 0));
+  } else if (sortBy.value === 'sharedTags') {
+    list.sort((a, b) => (b.sharedTags || 0) - (a.sharedTags || 0));
+  }
+  if (profiles.value.length && sortBy.value === 'smart') {
+    list.sort((a, b) => (b.score || 0) - (a.score || 0));
+  }
+  return list;
+});
+
+const currentProfile = computed(() => sortedProfiles.value[currentIndex.value] || null);
+const nextProfile = computed(() => sortedProfiles.value[currentIndex.value + 1] || null);
+
+watch([sortBy, sortedProfiles], () => {
+  currentIndex.value = 0;
+  resetSwipe();
+});
 
 const swipeHint = computed(() => {
   if (Math.abs(swipeX.value) < 40) return '';
@@ -301,6 +395,69 @@ onMounted(() => { loadProfiles(); });
   max-width: 440px;
   margin: 0 auto;
   padding: 12px 12px 0;
+}
+
+.swipe-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fd297b;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.filter-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  padding: 16px;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.filter-input {
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  background: #fafafa;
+}
+
+.apply-btn {
+  align-self: flex-end;
 }
 
 .swipe-title {

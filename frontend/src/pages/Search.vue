@@ -44,6 +44,7 @@
         <option value="popularity">Popularity</option>
         <option value="age">Age</option>
         <option value="distance">Distance</option>
+        <option value="sharedTags">Tags in common</option>
       </select>
     </div>
     <div v-if="sortedResults.length === 0" class="alert alert-info">No results yet.</div>
@@ -75,7 +76,7 @@
                 <span v-if="age(currentProfile.birthdate)">Age: {{ age(currentProfile.birthdate) }}</span>
                 <span v-if="currentProfile.distanceKm"> • {{ currentProfile.distanceKm.toFixed(1) }} km</span>
               </p>
-              <p class="card-text">Popularity: {{ currentProfile.popularity_score }}</p>
+              <p class="card-text">Popularity: {{ currentProfile.popularity_score }}<span v-if="currentProfile.shared_tags"> • {{ currentProfile.shared_tags }} tag{{ currentProfile.shared_tags > 1 ? 's' : '' }} in common</span></p>
             </div>
           </div>
         </div>
@@ -188,6 +189,9 @@ const sortedResults = computed(() => {
   }
   if (sortBy.value === 'distance') {
     return data.sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0));
+  }
+  if (sortBy.value === 'sharedTags') {
+    return data.sort((a, b) => (b.shared_tags || 0) - (a.shared_tags || 0));
   }
   return data.sort((a, b) => (b.popularity_score || 0) - (a.popularity_score || 0));
 });
