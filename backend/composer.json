@@ -18,7 +18,7 @@
     ]
   },
   "scripts": {
-    "start": "php -S localhost:8000 -t public",
+    "start": "PHP_CLI_SERVER_WORKERS=8 php -S localhost:8000 -t public",
     "mails": "tail -60 storage/logs/mail.log"
   }
 }

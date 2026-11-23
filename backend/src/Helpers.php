@@ -102,6 +102,19 @@ function currentUserId(): ?int
     return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
 }
 
+/**
+ * Libère le verrou de session le plus tôt possible sur les endpoints en lecture
+ * (PHP verrouille le fichier de session tant qu'il est ouvert, ce qui sérialise
+ * les requêtes d'un même utilisateur : polling du chat etc.).
+ * La lecture de $_SESSION reste possible après l'appel.
+ */
+function closeSession(): void
+{
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+}
+
 function hashToken(string $token): string
 {
     return hash('sha256', $token);

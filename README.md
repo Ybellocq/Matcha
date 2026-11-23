@@ -12,8 +12,12 @@ Application de rencontre type Tinder, construite avec **Vue 3 + PHP/Slim 4 + Pos
 
 ### Tout lancer d'un coup
 ```bash
-./start.sh    # Api :8000 + frontend :5173, logs dans backend.log / frontend.log
+./start.sh    # Api :8000 + frontend :5173, watchdog auto-restart, logs dans backend.log / frontend.log
 ```
+
+> Stabilité : l'API tourne avec `PHP_CLI_SERVER_WORKERS=8` (requêtes concurrentes OK pour le
+> polling temps réel) et les endpoints en lecture ferment la session PHP tôt pour éviter les
+> verrous entre requêtes d'un même utilisateur.
 
 ### Backend
 ```bash

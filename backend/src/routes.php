@@ -14,6 +14,7 @@ use function App\getSanitizedBody;
 use function App\getSanitizedQuery;
 use function App\requireFields;
 use function App\hashToken;
+use function App\closeSession;
 use function App\ensureCsrfToken;
 use function App\env;
 use function App\nowUtc;
@@ -325,6 +326,7 @@ HTML;
     });
 
     $app->get('/auth/me', function (Request $request, Response $response): Response {
+        closeSession();
         $userId = currentUserId();
         if ($userId === null) {
             return jsonResponse($response, ['user' => null, 'photos' => [], 'tags' => []]);
@@ -448,6 +450,7 @@ HTML;
         });
 
         $group->get('/profile/me', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare(
                 'SELECT u.id, u.username, u.first_name, u.last_name, u.email,
@@ -477,6 +480,7 @@ HTML;
         });
 
         $group->get('/profile/views', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare(
                 'SELECT u.username, u.first_name, u.last_name, v.created_at
@@ -492,6 +496,7 @@ HTML;
         });
 
         $group->get('/profile/likes', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare(
                 'SELECT u.username, u.first_name, u.last_name, l.created_at
@@ -507,6 +512,7 @@ HTML;
         });
 
         $group->get('/profile/blocked', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare(
                 'SELECT u.username, u.first_name, u.last_name, b.created_at
@@ -520,6 +526,7 @@ HTML;
         });
 
         $group->get('/profile/{username}', function (Request $request, Response $response, array $args) use ($notifications): Response {
+            closeSession();
             $userId = currentUserId();
             $username = strtolower((string) $args['username']);
 
@@ -869,6 +876,7 @@ HTML;
         });
 
         $group->get('/matches', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare(
                 'SELECT u.username, u.first_name, u.last_name, p.main_photo_id, p.popularity_score, u.last_seen_at,
@@ -884,6 +892,7 @@ HTML;
         });
 
         $group->get('/messages/unread', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare('SELECT COUNT(*) FROM messages WHERE receiver_id = :id AND read_at IS NULL');
             $stmt->execute([':id' => $userId]);
@@ -891,6 +900,7 @@ HTML;
         });
 
         $group->get('/messages/{username}', function (Request $request, Response $response, array $args): Response {
+            closeSession();
             $userId = currentUserId();
             $username = strtolower((string) $args['username']);
             $stmt = db()->prepare('SELECT id FROM users WHERE username = :username');
@@ -960,6 +970,7 @@ HTML;
         });
 
         $group->get('/notifications', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare(
                 'SELECT n.id, n.type, n.actor_id, n.metadata, n.created_at, n.read_at, u.username AS actor_username
@@ -973,6 +984,7 @@ HTML;
         });
 
         $group->get('/notifications/unread', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = :id AND read_at IS NULL');
             $stmt->execute([':id' => $userId]);
@@ -988,6 +1000,7 @@ HTML;
         });
 
         $group->get('/search/suggestions', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $query = getSanitizedQuery($request);
 
@@ -1126,6 +1139,7 @@ HTML;
         });
 
         $group->get('/search/advanced', function (Request $request, Response $response): Response {
+            closeSession();
             $userId = currentUserId();
             $query = getSanitizedQuery($request);
             $ageMin = isset($query['age_min']) ? (int) $query['age_min'] : null;
