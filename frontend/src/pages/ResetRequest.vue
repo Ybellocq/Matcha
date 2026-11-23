@@ -1,15 +1,15 @@
 <template>
   <div class="row justify-content-center">
     <div class="col-md-6">
-      <h2 class="mb-3">Reset password</h2>
-      <div v-if="success" class="alert alert-success">Check your email for the reset link.</div>
+      <h2 class="mb-3">Mot de passe oublié</h2>
+      <div v-if="success" class="alert alert-success">Vérifie ta boîte mail : le lien de réinitialisation viens de partir.</div>
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
       <form v-if="!success" @submit.prevent="submit">
         <div class="mb-3">
-          <label class="form-label">Email</label>
+          <label class="form-label">E-mail</label>
           <input v-model="email" type="email" class="form-control" required />
         </div>
-        <button class="btn btn-primary w-100">Send reset link</button>
+        <button class="btn btn-primary w-100">Envoyer le lien</button>
       </form>
     </div>
   </div>

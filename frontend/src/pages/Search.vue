@@ -1,23 +1,23 @@
 <template>
   <div>
-    <h2 class="mb-3">Advanced search</h2>
+    <h2 class="mb-3 page-title">Recherche avancée</h2>
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
     <form @submit.prevent="search" class="mb-4">
       <div class="row">
         <div class="col-md-3 mb-3">
-          <label class="form-label">Age min</label>
+          <label class="form-label">Âge min</label>
           <input v-model.number="filters.age_min" type="number" class="form-control" />
         </div>
         <div class="col-md-3 mb-3">
-          <label class="form-label">Age max</label>
+          <label class="form-label">Âge max</label>
           <input v-model.number="filters.age_max" type="number" class="form-control" />
         </div>
         <div class="col-md-3 mb-3">
-          <label class="form-label">Popularity min</label>
+          <label class="form-label">Popularité min</label>
           <input v-model.number="filters.popularity_min" type="number" class="form-control" />
         </div>
         <div class="col-md-3 mb-3">
-          <label class="form-label">Popularity max</label>
+          <label class="form-label">Popularité max</label>
           <input v-model.number="filters.popularity_max" type="number" class="form-control" />
         </div>
       </div>
@@ -27,11 +27,11 @@
           <input v-model.number="filters.distance_km" type="number" class="form-control" />
         </div>
         <div class="col-md-4 mb-3">
-          <label class="form-label">Location (city)</label>
+          <label class="form-label">Ville</label>
           <input v-model="filters.location" class="form-control" />
         </div>
         <div class="col-md-4 mb-3">
-          <label class="form-label">Tags (comma separated)</label>
+          <label class="form-label">Tags (séparés par des virgules)</label>
           <input v-model="filters.tags" class="form-control" />
         </div>
       </div>
@@ -39,21 +39,21 @@
     </form>
 
     <div class="d-flex align-items-center mb-3" v-if="results.length">
-      <label class="me-2">Sort by</label>
+      <label class="me-2">Trier par</label>
       <select v-model="sortBy" class="form-select w-auto">
         <option value="popularity">Popularity</option>
-        <option value="age">Age</option>
+        <option value="age">Âge</option>
         <option value="distance">Distance</option>
-        <option value="sharedTags">Tags in common</option>
+        <option value="sharedTags">Tags communs</option>
       </select>
     </div>
-    <div v-if="sortedResults.length === 0" class="alert alert-info">No results yet.</div>
+    <div v-if="sortedResults.length === 0" class="alert alert-info">Aucun résultat pour l'instant.</div>
     <div v-else class="swipe-wrapper">
-      <div v-if="!currentProfile" class="alert alert-info">No more profiles in this search.</div>
+      <div v-if="!currentProfile" class="alert alert-info">Plus de profil dans cette recherche.</div>
       <template v-else>
         <div class="d-flex justify-content-between align-items-center mb-2 swipe-header">
-          <div class="text-muted">Profile {{ currentIndex + 1 }} / {{ sortedResults.length }}</div>
-          <div class="text-muted small">Swipe left/right or use the buttons</div>
+          <div class="text-muted">Profil {{ currentIndex + 1 }} / {{ sortedResults.length }}</div>
+          <div class="text-muted small">Swipe gauche/droite ou utilise les boutons</div>
         </div>
         <div class="swipe-stage">
           <div v-if="nextProfile" class="card swipe-card swipe-card--next">
@@ -73,22 +73,22 @@
             <div class="card-body">
               <h5 class="card-title">{{ currentProfile.first_name }} {{ currentProfile.last_name }}</h5>
               <p class="card-text">
-                <span v-if="age(currentProfile.birthdate)">Age: {{ age(currentProfile.birthdate) }}</span>
+                <span v-if="age(currentProfile.birthdate)">Âge : {{ age(currentProfile.birthdate) }}</span>
                 <span v-if="currentProfile.distanceKm"> • {{ currentProfile.distanceKm.toFixed(1) }} km</span>
               </p>
-              <p class="card-text">Popularity: {{ currentProfile.popularity_score }}<span v-if="currentProfile.shared_tags"> • {{ currentProfile.shared_tags }} tag{{ currentProfile.shared_tags > 1 ? 's' : '' }} in common</span></p>
+              <p class="card-text">Popularité : {{ currentProfile.popularity_score }}<span v-if="currentProfile.shared_tags"> • {{ currentProfile.shared_tags }} tag{{ currentProfile.shared_tags > 1 ? 's' : '' }} en commun</span></p>
             </div>
           </div>
         </div>
         <div class="d-flex justify-content-center gap-3 mt-3 swipe-actions">
           <button class="btn swipe-action swipe-action--pass" @click="passCurrent" :disabled="actionPending">
-            Pass
+            Passer
           </button>
           <router-link class="btn swipe-action swipe-action--view" :to="`/users/${currentProfile.username}`">
-            View profile
+            Voir le profil
           </router-link>
           <button class="btn swipe-action swipe-action--like" @click="likeCurrent" :disabled="actionPending">
-            Like
+            Liker
           </button>
         </div>
       </template>
@@ -284,12 +284,17 @@ async function passCurrent() {
 </script>
 
 <style scoped>
+.page-title {
+  font-weight: 800;
+  color: var(--text);
+}
+
 .swipe-wrapper {
   max-width: 440px;
   margin: 0 auto;
   padding: 18px;
   border-radius: 22px;
-  background: linear-gradient(180deg, #fff2f2 0%, #ffffff 100%);
+  background: var(--card);
   box-shadow: 0 12px 30px rgba(13, 37, 62, 0.1);
 }
 
@@ -369,19 +374,19 @@ async function passCurrent() {
 }
 
 .swipe-action--pass {
-  background: #fff1f1;
+  background: rgba(239, 71, 111, 0.1);
   border: 2px solid #dc3545;
   color: #dc3545;
 }
 
 .swipe-action--like {
-  background: #ecfff3;
+  background: var(--success-soft);
   border: 2px solid #198754;
   color: #198754;
 }
 
 .swipe-action--view {
-  background: #eef2ff;
+  background: var(--info-soft);
   border: 2px solid #4f46e5;
   color: #4f46e5;
 }

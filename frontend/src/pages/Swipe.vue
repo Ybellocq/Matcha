@@ -1,41 +1,41 @@
 <template>
   <div class="swipe-page">
     <div class="swipe-topbar">
-      <h2 class="swipe-title">Discover</h2>
+      <h2 class="swipe-title">Découvrir</h2>
       <button class="filter-toggle" @click="showFilters = !showFilters">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-        Filters
+        Filtres
       </button>
     </div>
 
     <div v-if="showFilters" class="filter-panel">
       <div class="filter-row">
         <label>
-          Sort by
+          Trier par
           <select v-model="sortBy" class="filter-input">
-            <option value="smart">Smart score</option>
+            <option value="smart">Score intelligent</option>
             <option value="distance">Distance</option>
-            <option value="age">Age</option>
+            <option value="age">Âge</option>
             <option value="popularity">Popularity</option>
-            <option value="sharedTags">Common tags</option>
+            <option value="sharedTags">Tags communs</option>
           </select>
         </label>
         <label>
-          Age min
+          Âge min
           <input v-model.number="filters.age_min" type="number" min="18" class="filter-input" />
         </label>
         <label>
-          Age max
+          Âge max
           <input v-model.number="filters.age_max" type="number" class="filter-input" />
         </label>
       </div>
       <div class="filter-row">
         <label>
-          Popularity min
+          Popularité min
           <input v-model.number="filters.popularity_min" type="number" class="filter-input" />
         </label>
         <label>
-          Popularity max
+          Popularité max
           <input v-model.number="filters.popularity_max" type="number" class="filter-input" />
         </label>
         <label>
@@ -45,15 +45,15 @@
       </div>
       <div class="filter-row">
         <label>
-          City
+          Ville
           <input v-model="filters.location" class="filter-input" placeholder="Paris" />
         </label>
         <label>
-          Tags (comma separated)
+          Tags (séparés par des virgules)
           <input v-model="filters.tags" class="filter-input" placeholder="#vegan, #geek" />
         </label>
       </div>
-      <button class="btn btn-danger rounded-pill px-4 apply-btn" @click="loadProfiles">Apply</button>
+      <button class="btn btn-danger rounded-pill px-4 apply-btn" @click="loadProfiles">Appliquer</button>
     </div>
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -61,7 +61,7 @@
     <!-- Loading -->
     <div v-if="loading" class="loading-state">
       <div class="spinner-border text-danger" role="status"></div>
-      <p class="mt-3">Finding profiles near you...</p>
+      <p class="mt-3">On cherche des profils près de toi…</p>
     </div>
     
     <!-- Empty state -->
@@ -71,9 +71,9 @@
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <h3>No more profiles</h3>
-        <p>Check back later for new matches!</p>
-        <button @click="loadProfiles" class="btn btn-danger mt-3 rounded-pill px-4">Refresh</button>
+        <h3>Aucun profil à l'affiche</h3>
+        <p>Reviens plus tard : d'autres profils arrivent !</p>
+        <button @click="loadProfiles" class="btn btn-danger mt-3 rounded-pill px-4">Actualiser</button>
       </div>
     </div>
     
@@ -123,7 +123,7 @@
                   {{ currentProfile.popularity_score }}
                 </span>
                 <span v-if="currentProfile.sharedTags" class="meta-item">
-                  {{ currentProfile.sharedTags }} tag{{ currentProfile.sharedTags > 1 ? 's' : '' }} in common
+                  {{ currentProfile.sharedTags }} tag{{ currentProfile.sharedTags > 1 ? 's' : '' }} en commun
                 </span>
               </div>
               
@@ -156,16 +156,16 @@
       <Transition name="match-fade">
         <div v-if="showMatch" class="match-overlay" @click="showMatch = false">
           <div class="match-modal">
-            <h1 class="match-title">It's a Match!</h1>
-            <p class="match-subtitle">You and {{ matchUser }} liked each other</p>
+            <h1 class="match-title">C'est un Match !</h1>
+            <p class="match-subtitle">Tu as matché avec {{ matchUser }}</p>
             <div class="match-photos">
               <img :src="matchMyPhoto" class="match-photo" alt="You" />
               <div class="match-heart">💘</div>
               <img :src="matchTheirPhoto" class="match-photo" alt="Match" />
             </div>
             <div class="match-actions">
-              <button class="btn btn-outline-light rounded-pill px-4" @click.stop="showMatch = false; loadProfiles()">Keep swiping</button>
-              <button class="btn btn-light rounded-pill px-4" @click.stop="showMatch = false; $router.push(`/chat/${matchUser}`)">Send a message</button>
+              <button class="btn btn-outline-light rounded-pill px-4" @click.stop="showMatch = false; loadProfiles()">Continuer à swiper</button>
+              <button class="btn btn-light rounded-pill px-4" @click.stop="showMatch = false; $router.push(`/chat/${matchUser}`)">Envoyer un message</button>
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@ async function loadProfiles() {
     currentIndex.value = 0;
     resetSwipe();
   } catch (err) {
-    error.value = err.message || 'Failed to load profiles';
+    error.value = err.message || 'Impossible de charger les profils';
   } finally {
     loading.value = false;
   }
@@ -407,19 +407,19 @@ onMounted(() => { loadProfiles(); });
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #fff;
-  border: 1px solid #eee;
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 8px 16px;
   font-weight: 700;
   font-size: 0.85rem;
-  color: #fd297b;
+  color: var(--primary);
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .filter-panel {
-  background: #fff;
+  background: var(--card);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   padding: 16px;
@@ -443,17 +443,18 @@ onMounted(() => { loadProfiles(); });
   min-width: 100px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #666;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 
 .filter-input {
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px 10px;
   font-size: 0.9rem;
-  background: #fafafa;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .apply-btn {
@@ -464,7 +465,7 @@ onMounted(() => { loadProfiles(); });
   text-align: center;
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1a1a2e;
+  color: var(--text);
   margin-bottom: 12px;
   letter-spacing: -0.5px;
 }
@@ -481,8 +482,8 @@ onMounted(() => { loadProfiles(); });
 
 .empty-state { padding: 40px 20px; }
 .empty-icon { margin-bottom: 12px; }
-.empty-state h3 { font-size: 1.2rem; color: #555; margin-bottom: 6px; }
-.empty-state p { color: #999; font-size: 0.9rem; }
+.empty-state h3 { font-size: 1.2rem; color: var(--text); margin-bottom: 6px; }
+.empty-state p { color: var(--text-muted); font-size: 0.9rem; }
 
 .swipe-container { position: relative; }
 
@@ -494,9 +495,9 @@ onMounted(() => { loadProfiles(); });
 .profile-card {
   position: absolute;
   inset: 0;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  background: #fff;
+  background: var(--card);
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   cursor: grab;
   touch-action: none;
@@ -516,7 +517,7 @@ onMounted(() => { loadProfiles(); });
   position: relative;
   height: 400px;
   overflow: hidden;
-  background: #f0f0f0;
+  background: var(--surface);
 }
 
 .card-image-wrapper img {
@@ -660,7 +661,7 @@ onMounted(() => { loadProfiles(); });
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #fff;
+  background: var(--card);
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
 

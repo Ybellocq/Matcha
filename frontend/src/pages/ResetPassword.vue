@@ -1,15 +1,15 @@
 <template>
   <div class="row justify-content-center">
     <div class="col-md-6">
-      <h2 class="mb-3">Set new password</h2>
-      <div v-if="success" class="alert alert-success">Password updated. You can log in.</div>
+      <h2 class="mb-3">Nouveau mot de passe</h2>
+      <div v-if="success" class="alert alert-success">Mot de passe mis à jour ! Tu peux te connecter.</div>
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
       <form v-if="!success" @submit.prevent="submit">
         <div class="mb-3">
-          <label class="form-label">New password</label>
+          <label class="form-label">Nouveau mot de passe</label>
           <input v-model="password" type="password" class="form-control" required />
         </div>
-        <button class="btn btn-success w-100">Update password</button>
+        <button class="btn btn-success w-100">Mettre à jour</button>
       </form>
     </div>
   </div>

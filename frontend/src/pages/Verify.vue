@@ -1,8 +1,8 @@
 <template>
   <div class="text-center">
-    <h2>Email verification</h2>
-    <div v-if="status === 'pending'" class="alert alert-info">Verifying...</div>
-    <div v-if="status === 'success'" class="alert alert-success">Your account is verified. You can log in.</div>
+    <h2>Vérification de l'e-mail</h2>
+    <div v-if="status === 'pending'" class="alert alert-info">Vérification en cours…</div>
+    <div v-if="status === 'success'" class="alert alert-success">Compte vérifié ! Tu peux te connecter.</div>
     <div v-if="status === 'error'" class="alert alert-danger">{{ error }}</div>
   </div>
 </template>

@@ -4,27 +4,27 @@
       <div class="auth-header">
         <span class="auth-icon">🔥</span>
         <h1>matcha</h1>
-        <p class="auth-sub">Sign in to find your match</p>
+        <p class="auth-sub">Connecte-toi pour trouver ton match</p>
       </div>
       
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
       
       <form @submit.prevent="submit">
         <div class="mb-3">
-          <label class="form-label">Username</label>
-          <input v-model="form.username" class="form-control" placeholder="Your username" required autocomplete="username" />
+          <label class="form-label">Nom d'utilisateur</label>
+          <input v-model="form.username" class="form-control" placeholder="Ton nom d'utilisateur" required autocomplete="username" />
         </div>
         <div class="mb-3">
-          <label class="form-label">Password</label>
+          <label class="form-label">Mot de passe</label>
           <input v-model="form.password" type="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" />
         </div>
-        <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 fw-bold">Sign In</button>
+        <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 fw-bold">Connexion</button>
       </form>
       
       <div class="auth-footer">
-        <router-link to="/reset-request">Forgot password?</router-link>
+        <router-link to="/reset-request">Mot de passe oublié ?</router-link>
         <span class="mx-2">·</span>
-        <router-link to="/register">Create account</router-link>
+        <router-link to="/register">Créer un compte</router-link>
       </div>
     </div>
   </div>
@@ -63,10 +63,10 @@ async function submit() {
 }
 
 .auth-card {
-  background: #fff;
+  background: var(--card);
   border-radius: 20px;
   padding: 40px 32px;
-  box-shadow: 0 20px 60px rgba(253, 41, 123, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .auth-header {
@@ -79,7 +79,7 @@ async function submit() {
 .auth-header h1 {
   font-size: 1.8rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #fd297b, #ff655b);
+  background: var(--grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -87,7 +87,7 @@ async function submit() {
 }
 
 .auth-sub {
-  color: #999;
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin: 0;
 }
@@ -95,7 +95,7 @@ async function submit() {
 .form-label {
   font-weight: 600;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .form-control {

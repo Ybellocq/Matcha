@@ -4,13 +4,13 @@
       <div class="auth-header">
         <span class="auth-icon">🔥</span>
         <h1>matcha</h1>
-        <p class="auth-sub">Create your account</p>
+        <p class="auth-sub">Crée ton compte en 30 secondes</p>
       </div>
 
       <div v-if="success" class="text-center">
         <div class="success-icon">📧</div>
-        <h3 class="fw-bold">Check your email</h3>
-        <p class="text-muted">We sent a verification link to <strong>{{ form.email }}</strong>. Click it to activate your account.</p>
+        <h3 class="fw-bold">Vérifie ta boîte mail</h3>
+        <p class="text-muted">On t'a envoyé un lien de vérification à <strong>{{ form.email }}</strong>. Clique dessus pour activer ton compte.</p>
       </div>
 
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -18,31 +18,31 @@
       <form v-if="!success" @submit.prevent="submit">
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label">First name</label>
-            <input v-model="form.first_name" class="form-control" placeholder="John" required />
+            <label class="form-label">Prénom</label>
+            <input v-model="form.first_name" class="form-control" placeholder="Jean" required />
           </div>
           <div class="col-6">
-            <label class="form-label">Last name</label>
-            <input v-model="form.last_name" class="form-control" placeholder="Doe" required />
+            <label class="form-label">Nom</label>
+            <input v-model="form.last_name" class="form-control" placeholder="Dupont" required />
           </div>
         </div>
         <div class="mb-3">
-          <label class="form-label">Email</label>
+          <label class="form-label">E-mail</label>
           <input v-model="form.email" type="email" class="form-control" placeholder="you@example.com" required autocomplete="email" />
         </div>
         <div class="mb-3">
-          <label class="form-label">Username</label>
+          <label class="form-label">Nom d'utilisateur</label>
           <input v-model="form.username" class="form-control" placeholder="johndoe" required autocomplete="username" />
         </div>
         <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input v-model="form.password" type="password" class="form-control" placeholder="At least 8 characters" required autocomplete="new-password" minlength="8" />
+          <label class="form-label">Mot de passe</label>
+          <input v-model="form.password" type="password" class="form-control" placeholder="Au moins 8 caractères" required autocomplete="new-password" minlength="8" />
         </div>
-        <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 fw-bold">Create Account</button>
+        <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 fw-bold">Créer mon compte</button>
       </form>
 
       <div class="auth-footer" v-if="!success">
-        Already have an account? <router-link to="/login">Sign in</router-link>
+        Déjà inscrit ? <router-link to="/login">Connecte-toi</router-link>
       </div>
     </div>
   </div>
@@ -74,10 +74,10 @@ async function submit() {
 }
 
 .auth-card {
-  background: #fff;
+  background: var(--card);
   border-radius: 20px;
   padding: 36px 32px;
-  box-shadow: 0 20px 60px rgba(253, 41, 123, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .auth-header {
@@ -90,7 +90,7 @@ async function submit() {
 .auth-header h1 {
   font-size: 1.8rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #fd297b, #ff655b);
+  background: var(--grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -98,7 +98,7 @@ async function submit() {
 }
 
 .auth-sub {
-  color: #999;
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin: 0;
 }
@@ -108,7 +108,7 @@ async function submit() {
 .form-label {
   font-weight: 600;
   font-size: 0.8rem;
-  color: #666;
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
@@ -123,7 +123,7 @@ async function submit() {
   text-align: center;
   margin-top: 20px;
   font-size: 0.85rem;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .auth-footer a {

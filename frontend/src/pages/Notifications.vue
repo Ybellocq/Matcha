@@ -6,8 +6,8 @@
     
     <div v-if="notifications.length === 0" class="empty-state">
       <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <p>No notifications yet</p>
-      <span class="text-muted">Likes, messages, and views will appear here</span>
+      <p>Aucune notification</p>
+      <span class="text-muted">Les likes, messages et visites arriveront ici</span>
     </div>
     
     <div v-else class="notif-list">
@@ -29,11 +29,11 @@
         <div class="notif-body">
           <div class="notif-text">
             <strong>{{ item.actor_username }}</strong>
-            <span v-if="item.type === 'like'"> liked your profile</span>
-            <span v-else-if="item.type === 'match'"> matched with you!</span>
-            <span v-else-if="item.type === 'message'"> sent you a message</span>
-            <span v-else-if="item.type === 'view'"> viewed your profile</span>
-            <span v-else-if="item.type === 'unlike'"> unmatched you</span>
+            <span v-if="item.type === 'like'"> a liké ton profil</span>
+            <span v-else-if="item.type === 'match'"> a matché avec toi !</span>
+            <span v-else-if="item.type === 'message'"> t'a envoyé un message</span>
+            <span v-else-if="item.type === 'view'"> a visité ton profil</span>
+            <span v-else-if="item.type === 'unlike'"> t'a unliké</span>
             <span v-else> {{ item.type }}</span>
           </div>
           <div class="notif-time">{{ formatTime(item.created_at) }}</div>
@@ -81,9 +81,9 @@ function formatTime(dateStr) {
   const d = new Date(dateStr);
   const now = new Date();
   const diff = Math.floor((now - d) / 1000);
-  if (diff < 60) return 'Just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 60) return "À l'instant";
+  if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
   return d.toLocaleDateString();
 }
 </script>
@@ -98,21 +98,21 @@ function formatTime(dateStr) {
 .notif-title {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1a1a2e;
+  color: var(--text);
   margin-bottom: 20px;
 }
 
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .notif-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  background: #fff;
+  background: var(--card);
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0,0,0,0.04);
@@ -128,15 +128,15 @@ function formatTime(dateStr) {
   position: relative;
 }
 
-.notif-item:hover { background: #fafafa; }
-.notif-item--unread { background: #fef2f2; }
-.notif-item--unread:hover { background: #fde8e8; }
+.notif-item:hover { background: var(--surface); }
+.notif-item--unread { background: var(--primary-soft); }
+.notif-item--unread:hover { background: var(--primary-soft); }
 
 .notif-icon {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #f3f4f6;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -151,13 +151,13 @@ function formatTime(dateStr) {
 
 .notif-text {
   font-size: 0.9rem;
-  color: #333;
+  color: var(--text);
   line-height: 1.3;
 }
 
 .notif-time {
   font-size: 0.75rem;
-  color: #999;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 

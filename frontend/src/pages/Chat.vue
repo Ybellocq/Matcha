@@ -2,10 +2,10 @@
   <div class="chat-layout">
     <!-- Match list sidebar -->
     <div class="chat-sidebar">
-      <h4 class="chat-sidebar-title">Matches</h4>
+      <h4 class="chat-sidebar-title">Matchs</h4>
       <ul class="list-group list-group-flush">
         <li v-if="matches.length === 0" class="list-group-item text-muted text-center py-3">
-          No matches yet. Start liking people!
+          Aucun match pour l'instant. Va swiper !
         </li>
         <li
           v-for="match in matches"
@@ -26,8 +26,8 @@
           <div class="contact-info">
             <div class="contact-name">{{ match.first_name }}</div>
             <div class="contact-status">
-              <span class="online-badge" v-if="isOnline(match)">Online</span>
-              <span class="text-muted" v-else>Offline</span>
+              <span class="online-badge" v-if="isOnline(match)">En ligne</span>
+              <span class="text-muted" v-else>Hors ligne</span>
             </div>
           </div>
         </li>
@@ -40,8 +40,8 @@
         <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <h4>Your Messages</h4>
-        <p class="text-muted">Select a match to start chatting</p>
+        <h4>Tes messages</h4>
+        <p class="text-muted">Choisis un match pour discuter</p>
       </div>
 
       <template v-else>
@@ -60,7 +60,7 @@
         <!-- Messages -->
         <div class="chat-messages" ref="messagesContainer">
           <div v-if="messages.length === 0" class="text-center text-muted py-5">
-            No messages yet. Say hello!
+            Aucun message. Dis bonjour !
           </div>
           <div
             v-for="message in messages"
@@ -80,11 +80,11 @@
           <input
             v-model="newMessage"
             class="form-control chat-input-field"
-            placeholder="Type a message..."
+            placeholder="Écris un message…"
             required
             autocomplete="off"
           />
-          <button class="btn btn-danger rounded-pill px-3" type="submit">Send</button>
+          <button class="btn btn-danger rounded-pill px-3" type="submit">Envoyer</button>
         </form>
       </template>
     </div>
@@ -190,16 +190,16 @@ function formatTime(dateStr) {
 .chat-layout {
   display: flex;
   height: calc(100vh - 80px);
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-  background: #fff;
+  box-shadow: var(--shadow);
+  background: var(--card);
 }
 
 /* Sidebar */
 .chat-sidebar {
   width: 280px;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -209,8 +209,8 @@ function formatTime(dateStr) {
   padding: 16px 16px 12px;
   margin: 0;
   font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .chat-contact {
@@ -223,8 +223,8 @@ function formatTime(dateStr) {
   transition: background 0.15s;
 }
 
-.chat-contact:hover { background: #f9fafb; }
-.chat-contact.active { background: #fef2f2; border-left: 3px solid #ef4444; }
+.chat-contact:hover { background: var(--surface); }
+.chat-contact.active { background: var(--primary-soft); border-left: 3px solid var(--primary); }
 
 .contact-avatar {
   width: 44px;
@@ -243,7 +243,7 @@ function formatTime(dateStr) {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ef4444, #f97316);
+  background: var(--grad);
   color: #fff;
   display: flex;
   align-items: center;
@@ -253,10 +253,10 @@ function formatTime(dateStr) {
 }
 
 .contact-info { flex: 1; min-width: 0; }
-.contact-name { font-weight: 600; font-size: 0.9rem; color: #1a1a2e; }
+.contact-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
 .contact-status { font-size: 0.8rem; }
 
-.online-badge { color: #22c55e; font-weight: 600; }
+.online-badge { color: var(--success); font-weight: 700; }
 
 /* Chat main */
 .chat-main {
@@ -273,13 +273,13 @@ function formatTime(dateStr) {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .chat-header {
   padding: 12px 20px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fafafa;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .chat-header-user {
@@ -292,7 +292,7 @@ function formatTime(dateStr) {
   flex: 1;
   overflow-y: auto;
   padding: 16px 20px;
-  background: #f9fafb;
+  background: var(--bg-soft);
 }
 
 .message-row {
@@ -308,7 +308,8 @@ function formatTime(dateStr) {
   max-width: 70%;
   padding: 10px 14px;
   border-radius: 20px;
-  background: #fff;
+  background: var(--card);
+  color: var(--text);
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   font-size: 0.9rem;
   line-height: 1.4;
@@ -316,7 +317,7 @@ function formatTime(dateStr) {
 }
 
 .message-bubble--me {
-  background: linear-gradient(135deg, #ef4444, #f97316);
+  background: var(--grad);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -336,20 +337,21 @@ function formatTime(dateStr) {
   display: flex;
   gap: 8px;
   padding: 12px 20px;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  border-top: 1px solid var(--border);
+  background: var(--card);
 }
 
 .chat-input-field {
   border-radius: 24px;
-  background: #f3f4f6;
+  background: var(--surface);
   border: none;
   padding: 8px 16px;
+  color: var(--text);
 }
 
 .chat-input-field:focus {
-  background: #fff;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+  background: var(--card);
+  box-shadow: 0 0 0 2px rgba(253, 38, 122, 0.25);
 }
 
 @media (max-width: 768px) {

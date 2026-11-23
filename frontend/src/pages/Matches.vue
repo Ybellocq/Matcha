@@ -1,12 +1,12 @@
 <template>
   <div class="matches-page">
-    <h2 class="matches-title">Your Matches</h2>
+    <h2 class="matches-title">Tes Matchs</h2>
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
     
     <div v-if="matches.length === 0" class="empty-matches">
       <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      <h4>No matches yet</h4>
-      <p>Keep swiping to find your perfect match!</p>
+      <h4>Aucun match pour l'instant</h4>
+      <p>Continue de swiper, le coup de cœur est peut-être juste après !</p>
     </div>
     
     <div v-else class="matches-grid">
@@ -21,7 +21,7 @@
             <span v-if="match.popularity_score">⭐ {{ match.popularity_score }}</span>
           </div>
           <router-link class="btn btn-danger btn-sm rounded-pill px-3" :to="`/chat/${match.username}`">
-            Message
+            Écrire
           </router-link>
         </div>
       </div>
@@ -46,7 +46,7 @@ onMounted(async () => {
 });
 
 function placeholder(match) {
-  return `https://ui-avatars.com/api/?name=${match.first_name}+${match.last_name || ''}&background=db3e54&color=fff&size=400&bold=true`;
+  return `https://ui-avatars.com/api/?name=${match.first_name}+${match.last_name || ''}&background=fd267a&color=fff&size=400&bold=true`;
 }
 
 function photoUrl(path, match) {
@@ -72,20 +72,20 @@ function isOnline(match) {
   text-align: center;
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1a1a2e;
+  color: var(--text);
   margin-bottom: 24px;
 }
 
 .empty-matches {
   text-align: center;
   padding: 60px 20px;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .empty-matches h4 {
   margin-top: 12px;
   font-weight: 700;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .matches-grid {
@@ -95,7 +95,7 @@ function isOnline(match) {
 }
 
 .match-card {
-  background: #fff;
+  background: var(--card);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,0.06);
@@ -108,7 +108,7 @@ function isOnline(match) {
   position: relative;
   height: 200px;
   overflow: hidden;
-  background: #f3f4f6;
+  background: var(--surface);
 }
 
 .match-card-photo img {
@@ -125,7 +125,7 @@ function isOnline(match) {
   height: 12px;
   border-radius: 50%;
   background: #22c55e;
-  border: 2px solid #fff;
+  border: 2px solid var(--card);
   box-shadow: 0 0 8px rgba(34,197,94,0.4);
 }
 
@@ -138,7 +138,7 @@ function isOnline(match) {
   font-size: 1rem;
   font-weight: 700;
   margin-bottom: 4px;
-  color: #1a1a2e;
+  color: var(--text);
 }
 
 .match-card-meta {
