@@ -326,10 +326,14 @@ HTML;
     });
 
     $app->get('/auth/me', function (Request $request, Response $response): Response {
+        // Génère/persiste le token CSRF AVANT de fermer la session, sinon
+        // le token renvoyé ne serait jamais stocké et tous les POST
+        // suivants seraient rejetés en 403.
+        $csrfToken = ensureCsrfToken();
         closeSession();
         $userId = currentUserId();
         if ($userId === null) {
-            return jsonResponse($response, ['user' => null, 'photos' => [], 'tags' => []]);
+            return jsonResponse($response, ['user' => null, 'photos' => [], 'tags' => [], 'csrfToken' => $csrfToken]);
         }
         
         $stmt = db()->prepare(
@@ -356,7 +360,7 @@ HTML;
             'user' => $user,
             'photos' => $photos->fetchAll(),
             'tags' => array_column($tags->fetchAll(), 'name'),
-            'csrfToken' => ensureCsrfToken()
+            'csrfToken' => $csrfToken
         ]);
     });
 
