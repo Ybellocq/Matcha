@@ -168,6 +168,11 @@ async function updateProfile() {
   error.value = '';
   success.value = false;
   try {
+    // Géocode la ville automatiquement si aucune coordonnée n'est remplie
+    // (le backend complète aussi, on ne bloque pas si Nominatim échoue).
+    if (form.location_city && (form.location_lat == null || form.location_lng == null)) {
+      await geocodeCity();
+    }
     const tags = tagsInput.value
       .split(',')
       .map((t) => t.trim())

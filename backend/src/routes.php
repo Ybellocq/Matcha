@@ -17,6 +17,7 @@ use function App\hashToken;
 use function App\closeSession;
 use function App\ensureCsrfToken;
 use function App\env;
+use function App\geocodeCity;
 use function App\nowUtc;
 use function App\currentUserId;
 use function App\isCommonPassword;
@@ -411,6 +412,22 @@ HTML;
             }
 
             if ($profileFields !== []) {
+                // Géocodage automatique de la ville si aucune coordonnée n'a
+                // été fournie (GPS) : indispensable pour que le filtre
+                // distance et le tri géographique fonctionnent.
+                $clientSentCoords = isset($profileFields['location_lat'], $profileFields['location_lng'])
+                    && $profileFields['location_lat'] !== ''
+                    && $profileFields['location_lat'] !== null
+                    && $profileFields['location_lng'] !== ''
+                    && $profileFields['location_lng'] !== null;
+                if (isset($profileFields['location_city']) && trim((string) $profileFields['location_city']) !== '' && !$clientSentCoords) {
+                    $coords = geocodeCity((string) $profileFields['location_city']);
+                    if ($coords !== null) {
+                        $profileFields['location_lat'] = $coords['lat'];
+                        $profileFields['location_lng'] = $coords['lng'];
+                    }
+                }
+
                 $sets = [];
                 $params = [':user_id' => $userId];
                 foreach ($profileFields as $key => $value) {
@@ -1230,18 +1247,23 @@ HTML;
                 }
 
                 if ($distanceMax !== null) {
-                    if (!$me || $me['location_lat'] === null || $me['location_lng'] === null
-                        || $candidate['location_lat'] === null || $candidate['location_lng'] === null) {
-                        continue;
-                    }
-                    $distance = haversine(
-                        (float) $me['location_lat'],
-                        (float) $me['location_lng'],
-                        (float) $candidate['location_lat'],
-                        (float) $candidate['location_lng']
-                    );
-                    if ($distance > $distanceMax) {
-                        continue;
+                    // Si ma propre position est inconnue (ville saisie sans
+                    // géocodage), on ignore le filtre distance plutôt que de
+                    // renvoyer zéro résultat.
+                    $myCoordsKnown = $me && $me['location_lat'] !== null && $me['location_lng'] !== null;
+                    if ($myCoordsKnown) {
+                        if ($candidate['location_lat'] === null || $candidate['location_lng'] === null) {
+                            continue;
+                        }
+                        $distance = haversine(
+                            (float) $me['location_lat'],
+                            (float) $me['location_lng'],
+                            (float) $candidate['location_lat'],
+                            (float) $candidate['location_lng']
+                        );
+                        if ($distance > $distanceMax) {
+                            continue;
+                        }
                     }
                 }
 

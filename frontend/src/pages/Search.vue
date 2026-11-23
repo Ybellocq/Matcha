@@ -2,6 +2,10 @@
   <div>
     <h2 class="mb-3 page-title">Recherche avancée</h2>
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
+    <div v-if="!meCoordsKnown && filters.distance_km" class="alert alert-warning">
+      Ta position n'est pas encore géolocalisée : le filtre distance est ignoré.
+      <router-link to="/profile" class="alert-link">Renseigne ta ville dans ton profil</router-link> pour l'activer.
+    </div>
     <form @submit.prevent="search" class="mb-4">
       <div class="row">
         <div class="col-md-3 mb-3">
@@ -35,7 +39,7 @@
           <input v-model="filters.tags" class="form-control" />
         </div>
       </div>
-      <button class="btn btn-primary">Search</button>
+      <button class="btn btn-primary">Rechercher</button>
     </form>
 
     <div class="d-flex align-items-center mb-3" v-if="results.length">
@@ -97,7 +101,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, watch } from 'vue';
+import { onMounted, reactive, ref, computed, watch } from 'vue';
 import { api, API_URL } from '../api.js';
 
 const filters = reactive({
@@ -113,6 +117,7 @@ const results = ref([]);
 const error = ref('');
 const sortBy = ref('popularity');
 const myLocation = ref({ lat: null, lng: null });
+const meCoordsKnown = ref(true);
 const currentIndex = ref(0);
 const swipeX = ref(0);
 const swipeY = ref(0);
@@ -163,11 +168,14 @@ async function search() {
       lat: me.profile?.location_lat ?? null,
       lng: me.profile?.location_lng ?? null
     };
+    meCoordsKnown.value = myLocation.value.lat != null && myLocation.value.lng != null;
     const query = buildQuery();
     const data = await api(`/search/advanced?${query}`);
     results.value = (data.results || []).map((profile) => ({
       ...profile,
-      distanceKm: computeDistance(myLocation.value.lat, myLocation.value.lng, profile.location_lat, profile.location_lng)
+      distanceKm: meCoordsKnown.value
+        ? computeDistance(myLocation.value.lat, myLocation.value.lng, profile.location_lat, profile.location_lng)
+        : null
     }));
     currentIndex.value = 0;
     resetSwipe();
@@ -211,6 +219,10 @@ const cardStyle = computed(() => ({
 watch([results, sortBy], () => {
   currentIndex.value = 0;
   resetSwipe();
+});
+
+onMounted(() => {
+  search();
 });
 
 function resetSwipe() {

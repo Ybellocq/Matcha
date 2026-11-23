@@ -53,7 +53,8 @@ npm run dev                   # Tourne sur localhost:5173
 - 👤 Profil détaillé consultable depuis le deck avec bouton **Retour** vers la sélection
 - 💬 Chat temps réel entre matchs (polling ≤ 5 s)
 - 🔔 Notifications temps réel (like, visite, message, match, unlike)
-- 📍 Géolocalisation GPS avec consentement + saisie manuelle de ville (géocodage Nominatim)
+- 📍 Géolocalisation GPS avec consentement + saisie manuelle de ville **géocodée automatiquement** (Nominatim, serveur et client)
+- 🧰 Maintenance : `php db/geocode.php` — géocode en masse les profils qui ont une ville sans coordonnées
 - 📸 Upload de photos (5 max, photo principale sélectionnable)
 - 🏷️ Tags d'intérêts réutilisables
 - 🔍 Recherche avancée : âge, popularité, distance, ville, tags — triable et filtrable

@@ -172,3 +172,40 @@ function nowUtc(): string
 {
     return gmdate('Y-m-d H:i:s');
 }
+
+/**
+ * Géocode une ville via Nominatim (OpenStreetMap).
+ * Retourne ['lat' => float, 'lng' => float] ou null en cas d'échec
+ * (réseau indisponible, ville inconnue) — ne doit jamais bloquer la
+ * sauvegarde du profil.
+ */
+function geocodeCity(string $city): ?array
+{
+    $city = trim($city);
+    if ($city === '') {
+        return null;
+    }
+
+    $url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' . rawurlencode($city);
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => 3,
+            'header' => "User-Agent: Matcha/1.0 (dating app evaluation)\r\n",
+        ],
+    ]);
+
+    $raw = @file_get_contents($url, false, $context);
+    if ($raw === false) {
+        return null;
+    }
+
+    $data = json_decode($raw, true);
+    if (!is_array($data) || $data === [] || !isset($data[0]['lat'], $data[0]['lon'])) {
+        return null;
+    }
+
+    return [
+        'lat' => (float) $data[0]['lat'],
+        'lng' => (float) $data[0]['lon'],
+    ];
+}
