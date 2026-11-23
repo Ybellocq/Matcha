@@ -241,7 +241,7 @@ HTML;
 
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
-        ensureCsrfToken();
+        $csrfToken = ensureCsrfToken();
 
         $stmt = db()->prepare('UPDATE users SET last_login_at = :last_login, last_seen_at = :last_seen WHERE id = :id');
         $stmt->execute([
@@ -250,7 +250,7 @@ HTML;
             ':id' => $user['id']
         ]);
 
-        return jsonResponse($response, ['status' => 'logged_in']);
+        return jsonResponse($response, ['status' => 'logged_in', 'csrfToken' => $csrfToken]);
     });
 
     $app->post('/auth/password/request', function (Request $request, Response $response) use ($mailer): Response {
@@ -622,7 +622,7 @@ HTML;
             $photoStmt = db()->prepare('SELECT COUNT(*) FROM photos WHERE user_id = :id');
             $photoStmt->execute([':id' => $userId]);
             if ((int) $photoStmt->fetchColumn() === 0) {
-                return jsonResponse($response, ['error' => 'Upload a photo before liking'], 403);
+                return jsonResponse($response, ['error' => 'Upload a photo before liking', 'code' => 'no_photo'], 422);
             }
 
             $stmt = db()->prepare('SELECT 1 FROM likes WHERE liker_id = :me AND liked_id = :other');

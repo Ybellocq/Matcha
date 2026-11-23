@@ -47,7 +47,9 @@ async function submit() {
       const csrfData = await fetch(`${API_URL}/auth/csrf`).then(r => r.json());
       session.csrfToken = csrfData.csrfToken;
     }
-    await api('/auth/login', { method: 'POST', body: form });
+    await api('/auth/login', { method: 'POST', body: form }).then((data) => {
+      if (data.csrfToken) session.csrfToken = data.csrfToken;
+    });
     await refreshSession();
     router.push('/swipe');
   } catch (err) {

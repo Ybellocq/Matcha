@@ -8,6 +8,11 @@
       </button>
     </div>
 
+    <div v-if="noPhoto && !loading" class="alert alert-warning no-photo-banner" role="alert">
+      <span>📸 Ajoute une photo de profil pour pouvoir liker les profils.</span>
+      <router-link to="/profile" class="btn btn-sm btn-primary ms-2">Compléter mon profil</router-link>
+    </div>
+
     <div v-if="showFilters" class="filter-panel">
       <div class="filter-row">
         <label>
@@ -177,7 +182,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { api, API_URL } from '../api.js';
+import { api, API_URL, friendlyError } from '../api.js';
 
 const router = useRouter();
 
@@ -186,6 +191,7 @@ const currentIndex = ref(0);
 const loading = ref(true);
 const error = ref('');
 const myPhotoUrl = ref('');
+const noPhoto = ref(false);
 const myProfile = ref(null);
 const sortBy = ref('smart');
 const showFilters = ref(false);
@@ -221,6 +227,7 @@ async function loadProfiles() {
     const me = await api('/profile/me');
     myProfile.value = me.profile || null;
     myPhotoUrl.value = me.photos?.[0]?.path ? photoUrlRaw(me.photos[0].path) : '';
+    noPhoto.value = myPhotoUrl.value === '';
 
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(filters)) {
@@ -239,7 +246,7 @@ async function loadProfiles() {
     currentIndex.value = 0;
     resetSwipe();
   } catch (err) {
-    error.value = err.message || 'Impossible de charger les profils';
+    error.value = friendlyError(err) || 'Impossible de charger les profils';
   } finally {
     loading.value = false;
   }
@@ -368,7 +375,7 @@ async function likeCurrent() {
       setTimeout(() => { showMatch.value = true; }, 400);
     }
   } catch (err) {
-    error.value = err.message;
+    error.value = friendlyError(err);
     resetSwipe();
   } finally {
     actionPending.value = false;

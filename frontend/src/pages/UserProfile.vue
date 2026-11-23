@@ -111,6 +111,10 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
           Bloquer
         </button>
+        <div v-if="actionError" class="action-error alert alert-danger" style="width: 100%;">
+          {{ actionError }}
+          <router-link v-if="actionError.includes('photo')" to="/profile" class="alert-link">Ajouter une photo</router-link>
+        </div>
       </div>
     </div>
   </div>
@@ -119,7 +123,7 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { api, API_URL } from '../api.js';
+import { api, API_URL, friendlyError } from '../api.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -130,6 +134,7 @@ const photos = ref([]);
 const tags = ref([]);
 const liked = ref(false);
 const matched = ref(false);
+const actionError = ref('');
 const currentPhoto = ref(0);
 
 const isOnline = computed(() => {
@@ -156,29 +161,55 @@ async function loadProfile() {
 }
 
 async function like() {
-  await api(`/profile/${route.params.username}/like`, { method: 'POST' });
-  await loadProfile();
+  actionError.value = '';
+  try {
+    await api(`/profile/${route.params.username}/like`, { method: 'POST' });
+    await loadProfile();
+  } catch (err) {
+    actionError.value = friendlyError(err);
+  }
 }
 
 async function unlike() {
-  await api(`/profile/${route.params.username}/unlike`, { method: 'POST' });
-  await loadProfile();
+  actionError.value = '';
+  try {
+    await api(`/profile/${route.params.username}/unlike`, { method: 'POST' });
+    await loadProfile();
+  } catch (err) {
+    actionError.value = friendlyError(err);
+  }
 }
 
 async function unmatch() {
-  if (!confirm('Unmatch this user? Your chat will be deleted.')) return;
-  await api(`/profile/${route.params.username}/unmatch`, { method: 'POST' });
-  await loadProfile();
+  if (!confirm('Se dématcher ? La conversation sera supprimée.')) return;
+  actionError.value = '';
+  try {
+    await api(`/profile/${route.params.username}/unmatch`, { method: 'POST' });
+    await loadProfile();
+  } catch (err) {
+    actionError.value = friendlyError(err);
+  }
 }
 
 async function report() {
   const reason = prompt('Raison du signalement (facultatif) :') || '';
-  await api(`/profile/${route.params.username}/report`, { method: 'POST', body: { reason } });
+  actionError.value = '';
+  try {
+    await api(`/profile/${route.params.username}/report`, { method: 'POST', body: { reason } });
+    actionError.value = 'Signalement enregistré. Merci !';
+  } catch (err) {
+    actionError.value = friendlyError(err);
+  }
 }
 
 async function block() {
   if (!confirm('Bloquer cet utilisateur ? Il disparaîtra de la recherche et le chat sera désactivé.')) return;
-  await api(`/profile/${route.params.username}/block`, { method: 'POST' });
+  actionError.value = '';
+  try {
+    await api(`/profile/${route.params.username}/block`, { method: 'POST' });
+  } catch (err) {
+    actionError.value = friendlyError(err);
+  }
 }
 
 function goChat() {

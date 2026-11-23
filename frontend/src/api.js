@@ -10,8 +10,23 @@ async function parseJson(response) {
   }
 }
 
-export async function api(path, options = {}) {
-  const headers = options.headers ? { ...options.headers } : {};
+// Traduit les erreurs renvoyées par l'API en messages compréhensibles.
+const ERROR_FR = [
+  ['photo before liking', "Ajoute d'abord une photo de profil dans ton compte pour pouvoir liker 💙"],
+  ['Invalid CSRF token', 'Session expirée — recharge la page.'],
+  ['Action not allowed', 'Action non autorisée (un blocage empêche cette action).'],
+  ['Unauthorized', 'Connecte-toi pour effectuer cette action.'],
+];
+
+export function friendlyError(err) {
+  const msg = err?.message || '';
+  for (const [needle, fr] of ERROR_FR) {
+    if (msg.includes(needle)) return fr;
+  }
+  return msg || 'Une erreur est survenue';
+}
+
+export async function api(path, options = {}) {  const headers = options.headers ? { ...options.headers } : {};
   const isForm = options.body instanceof FormData;
   if (!isForm) {
     headers['Content-Type'] = 'application/json';
