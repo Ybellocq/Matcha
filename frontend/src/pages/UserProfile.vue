@@ -1,5 +1,11 @@
 <template>
   <div class="user-profile-page">
+    <div class="profil-topbar">
+      <button class="profil-back" @click="goBack" aria-label="Retour à la sélection">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Retour
+      </button>
+    </div>
     <div v-if="loading" class="loading-state">
       <div class="spinner-border text-danger" role="status"></div>
       <p class="mt-2">Chargement du profil…</p>
@@ -212,6 +218,14 @@ async function block() {
   }
 }
 
+function goBack() {
+  if (window.history.state?.back) {
+    router.back();
+  } else {
+    router.push('/swipe');
+  }
+}
+
 function goChat() {
   router.push(`/chat/${route.params.username}`);
 }
@@ -246,6 +260,36 @@ function formatDate(dateStr) {
   max-width: 480px;
   margin: 0 auto;
   padding: 12px;
+}
+
+.profil-topbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.profil-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--border, #e5e7eb);
+  color: var(--text, #1f2937);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.profil-back:hover {
+  background: var(--primary-soft, #ffe4ec);
+  color: var(--primary, #fd297b);
+}
+
+.profil-back:active {
+  transform: scale(0.96);
 }
 
 .loading-state {

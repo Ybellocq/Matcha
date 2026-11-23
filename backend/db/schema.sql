@@ -83,6 +83,14 @@ CREATE TABLE matches (
     UNIQUE (user_one_id, user_two_id)
 );
 
+CREATE TABLE passes (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    passed_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL,
+    UNIQUE (user_id, passed_id)
+);
+
 CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
     sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

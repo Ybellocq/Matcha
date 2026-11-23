@@ -28,7 +28,7 @@ $orientations = ['heterosexual', 'homosexual', 'bisexual'];
 $tags = ['vegan', 'geek', 'travel', 'sports', 'music', 'movies', 'gaming', 'art', 'coding', 'fitness', 'foodie', 'books'];
 
 $pdo->beginTransaction();
-$pdo->exec('TRUNCATE TABLE notifications, messages, matches, likes, user_tags, tags, photos, profiles, email_verification_tokens, password_reset_tokens, profile_views, blocks, reports, users RESTART IDENTITY CASCADE');
+$pdo->exec('TRUNCATE TABLE notifications, messages, passes, matches, likes, user_tags, tags, photos, profiles, email_verification_tokens, password_reset_tokens, profile_views, blocks, reports, users RESTART IDENTITY CASCADE');
 
 $tagIds = [];
 $tagStmt = $pdo->prepare('INSERT INTO tags (name) VALUES (:name) RETURNING id');

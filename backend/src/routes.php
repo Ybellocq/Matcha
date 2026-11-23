@@ -662,6 +662,27 @@ HTML;
             return jsonResponse($response, ['status' => 'liked', 'matched' => $matched]);
         });
 
+        $group->post('/profile/{username}/pass', function (Request $request, Response $response, array $args): Response {
+            $userId = currentUserId();
+            $username = strtolower((string) $args['username']);
+
+            $stmt = db()->prepare('SELECT id FROM users WHERE username = :username');
+            $stmt->execute([':username' => $username]);
+            $targetId = $stmt->fetchColumn();
+            if (!$targetId || (int) $targetId === $userId) {
+                return jsonResponse($response, ['error' => 'Invalid target'], 404);
+            }
+
+            // Marquer comme passé : le profil ne réapparaîtra pas dans le deck.
+            $stmt = db()->prepare(
+                'INSERT INTO passes (user_id, passed_id, created_at)
+                 VALUES (:me, :other, :now) ON CONFLICT DO NOTHING'
+            );
+            $stmt->execute([':me' => $userId, ':other' => (int) $targetId, ':now' => nowUtc()]);
+
+            return jsonResponse($response, ['status' => 'passed']);
+        });
+
         $group->post('/profile/{username}/unlike', function (Request $request, Response $response, array $args) use ($notifications): Response {
             $userId = currentUserId();
             $username = strtolower((string) $args['username']);
@@ -1030,7 +1051,10 @@ HTML;
                  LEFT JOIN photos ph ON ph.id = p.main_photo_id
                  WHERE u.id != :id
                    AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = :id)
-                   AND u.id NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = :id)'
+                   AND u.id NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = :id)
+                   -- Ne jamais représenter un profil déjà liké ou passé
+                   AND u.id NOT IN (SELECT liked_id FROM likes WHERE liker_id = :id)
+                   AND u.id NOT IN (SELECT passed_id FROM passes WHERE user_id = :id)'
             );
             $stmt->execute([':id' => $userId]);
             $candidates = $stmt->fetchAll();

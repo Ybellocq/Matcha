@@ -49,7 +49,8 @@ npm run dev                   # Tourne sur localhost:5173
 - 📱 Responsive mobile-first, layout en-tête + section principale + pied de page
 
 ## Fonctionnalités
-- 💘 Swipe avec drag, "C'est un Match !" en overlay animé
+- 💘 Swipe avec drag, "C'est un Match !" en overlay animé — les profils **likés ou passés ne sont plus jamais représentés** dans le deck (persistés en base) ; unprofil déliké revient dans la sélection
+- 👤 Profil détaillé consultable depuis le deck avec bouton **Retour** vers la sélection
 - 💬 Chat temps réel entre matchs (polling ≤ 5 s)
 - 🔔 Notifications temps réel (like, visite, message, match, unlike)
 - 📍 Géolocalisation GPS avec consentement + saisie manuelle de ville (géocodage Nominatim)

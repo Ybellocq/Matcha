@@ -76,8 +76,8 @@
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <h3>Aucun profil à l'affiche</h3>
-        <p>Reviens plus tard : d'autres profils arrivent !</p>
+        <h3>Tu as vu tout le monde 🎉</h3>
+        <p>Élargis tes filtres, actualise pour repartir du début, ou reviens plus tard : de nouveaux profils arrivent !</p>
         <button @click="loadProfiles" class="btn btn-danger mt-3 rounded-pill px-4">Actualiser</button>
       </div>
     </div>
@@ -385,6 +385,9 @@ async function likeCurrent() {
 async function passCurrent() {
   if (!currentProfile.value || actionPending.value) return;
   actionPending.value = true;
+  const profile = currentProfile.value;
+  // Persister le pass pour ne plus représenter ce profil dans le deck
+  api(`/profile/${profile.username}/pass`, { method: 'POST' }).catch(() => {});
   await animateSwipe('left');
   actionPending.value = false;
 }
