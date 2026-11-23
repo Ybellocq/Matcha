@@ -18,6 +18,7 @@
     ]
   },
   "scripts": {
-    "start": "php -S localhost:8000 -t public"
+    "start": "php -S localhost:8000 -t public",
+    "mails": "tail -60 storage/logs/mail.log"
   }
 }

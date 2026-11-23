@@ -15,7 +15,9 @@ final class Mailer
 
         if ($mode === 'log') {
             $logPath = __DIR__ . '/../../storage/logs/mail.log';
-            $entry = sprintf("[%s] TO:%s SUBJECT:%s\n%s\n\n", date('c'), $to, $subject, $html);
+            preg_match_all('/https?:\/\/[^\s<>"]+/', $html, $matches);
+            $links = $matches[0] !== [] ? implode("\n", $matches[0]) : '(no links)';
+            $entry = sprintf("[%s] TO:%s SUBJECT:%s\nLINKS:\n%s\n\n", date('c'), $to, $subject, $links);
             file_put_contents($logPath, $entry, FILE_APPEND);
             return;
         }

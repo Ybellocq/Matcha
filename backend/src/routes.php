@@ -15,6 +15,7 @@ use function App\getSanitizedQuery;
 use function App\requireFields;
 use function App\hashToken;
 use function App\ensureCsrfToken;
+use function App\env;
 use function App\nowUtc;
 use function App\currentUserId;
 use function App\isCommonPassword;
@@ -23,6 +24,93 @@ use function App\sanitizeString;
 return function (App $app, Mailer $mailer, NotificationService $notifications): void {
     $app->get('/health', function (Request $request, Response $response): Response {
         return jsonResponse($response, ['status' => 'ok']);
+    });
+
+    // Boîte mail de dev : disponible uniquement quand MAIL_MODE=log.
+    // Affiche dans le navigateur les e-mails "envoyés" avec leurs liens cliquables.
+    $app->get('/dev/mailbox', function (Request $request, Response $response): Response {
+        if (env('MAIL_MODE', 'log') !== 'log') {
+            return jsonResponse($response, ['error' => 'Mailbox is only available when MAIL_MODE=log'], 404);
+        }
+
+        $logPath = __DIR__ . '/../storage/logs/mail.log';
+        $mails = [];
+        if (is_file($logPath)) {
+            $entries = preg_split('/\n\n+/', (string) file_get_contents($logPath)) ?: [];
+            foreach ($entries as $entry) {
+                $entry = trim($entry);
+                if ($entry === '' || !preg_match('/^\[([^\]]+)\] TO:([^ ]+) SUBJECT:([^\n]*)/', $entry, $m)) {
+                    continue;
+                }
+                preg_match_all('/https?:\/\/[^\s"]+/', $entry, $links);
+                $mails[] = [
+                    'date' => $m[1],
+                    'to' => $m[2],
+                    'subject' => $m[3],
+                    'links' => $links[0],
+                ];
+            }
+            $mails = array_reverse($mails);
+        }
+
+        if (isset($_GET['format']) && $_GET['format'] === 'json') {
+            return jsonResponse($response, ['mails' => $mails]);
+        }
+
+        $rows = '';
+        foreach ($mails as $mail) {
+            $date = htmlspecialchars($mail['date'], ENT_QUOTES);
+            $to = htmlspecialchars($mail['to'], ENT_QUOTES);
+            $subject = htmlspecialchars($mail['subject'], ENT_QUOTES);
+            $linksHtml = '';
+            foreach ($mail['links'] as $link) {
+                $safe = htmlspecialchars($link, ENT_QUOTES);
+                $linksHtml .= '<a class="link" href="' . $safe . '">' . $safe . '</a>';
+            }
+            if ($linksHtml === '') {
+                $linksHtml = '<span class="muted">Aucun lien</span>';
+            }
+            $rows .= <<<ROW
+<article class="mail">
+  <header><span class="subject">{$subject}</span><span class="meta">{$to} — {$date}</span></header>
+  {$linksHtml}
+</article>
+ROW;
+        }
+        if ($rows === '') {
+            $rows = '<p class="empty">Aucun e-mail pour l\'instant. Crée un compte depuis le frontend, il apparaîtra ici.</p>';
+        }
+
+        $html = <<<HTML
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Matcha — Boîte mail de dev</title>
+<meta name="robots" content="noindex">
+<style>
+  body { font-family: system-ui, sans-serif; background: #f8f9fb; margin: 0; padding: 24px; }
+  h1 { font-size: 1.2rem; background: linear-gradient(135deg, #fd267a, #ff6036); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .mail { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .mail header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .subject { font-weight: 700; }
+  .meta { color: #6b7280; font-size: .8rem; }
+  .link { display: block; word-break: break-all; color: #fd297b; margin: 4px 0; font-size: .85rem; }
+  .muted { color: #9ca3af; font-size: .85rem; }
+  .empty { color: #6b7280; }
+  p.tip { color: #6b7280; font-size: .85rem; }
+</style>
+</head>
+<body>
+<h1>📬 Matcha — boîte mail (dev)</h1>
+<p class="tip">Disponible car MAIL_MODE=log. Les e-mails ne sont pas réellement envoyés : leurs liens de vérification / réinitialisation sont cliquables ci-dessous. Recharge la page après une inscription.</p>
+{$rows}
+</body>
+</html>
+HTML;
+
+        $response->getBody()->write($html);
+        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
     });
 
     $app->get('/auth/csrf', function (Request $request, Response $response): Response {

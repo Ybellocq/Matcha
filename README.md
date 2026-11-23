@@ -10,6 +10,11 @@ Application de rencontre type Tinder, construite avec **Vue 3 + PHP/Slim 4 + Pos
 
 ## Démarrage rapide
 
+### Tout lancer d'un coup
+```bash
+./start.sh    # Api :8000 + frontend :5173, logs dans backend.log / frontend.log
+```
+
 ### Backend
 ```bash
 cd backend
@@ -30,8 +35,8 @@ npm run dev                   # Tourne sur localhost:5173
 ```
 
 ## E-mail
-- `MAIL_MODE=log` → les e-mails sont écrits dans `backend/storage/logs/mail.log`
-- `MAIL_MODE=smtp` → renseigne les identifiants SMTP dans `backend/.env`
+- `MAIL_MODE=log` (défaut, dev) → les e-mails ne sont pas réellement envoyés : leurs **liens cliquables** sont visibles dans la boîte mail de dev **http://localhost:8000/dev/mailbox** (ou dans `backend/storage/logs/mail.log`, commande rapide : `composer mails` dans `backend/`). Après inscription, clique le lien de vérification dedans pour activer ton compte.
+- `MAIL_MODE=smtp` → renseigne `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS` dans `backend/.env` (ex. Gmail : host `smtp.gmail.com`, port 587, un mot de passe d'application). L'envoi passe par PHPMailer (STARTTLS). Disponible uniquement en mode smtp, l'endpoint `/dev/mailbox` renvoie 404 en production.
 
 ## Direction artistique
 - 🔥 Style Tinder : swipe gauche/droite avec drag, badges LIKE/NOPE, boutons ronds (passer / profil / liker)
