@@ -99,13 +99,14 @@
             @pointermove="onPointerMove"
             @pointerup="onPointerUp"
             @pointercancel="onPointerUp"
+            @dragstart.prevent
           >
             <!-- Swipe indicators -->
             <div class="swipe-badge swipe-badge--like" :class="{ 'is-visible': swipeHint === 'like' }">LIKE</div>
             <div class="swipe-badge swipe-badge--nope" :class="{ 'is-visible': swipeHint === 'pass' }">NOPE</div>
             
             <div class="card-image-wrapper">
-              <img :src="photoUrl(currentProfile.main_photo_path, currentProfile)" class="card-img-top" alt="" />
+              <img :src="photoUrl(currentProfile.main_photo_path, currentProfile)" class="card-img-top" alt="" draggable="false" />
               <div class="card-gradient"></div>
             </div>
             
@@ -138,6 +139,100 @@
                 <span v-for="(tag, i) in currentProfile.tags.slice(0, 6)" :key="i" class="tag-pill">#{{ tag }}</span>
               </div>
             </div>
+            
+            <!-- Details overlay (toggle on/off) -->
+            <div v-if="showInfo" class="card-details">
+              <button class="details-close" @click.stop="toggleInfo" aria-label="Fermer les détails">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+              
+              <div v-if="infoLoading" class="details-loading">
+                <div class="spinner-border text-danger" role="status"></div>
+              </div>
+              <div v-else-if="infoError" class="details-error alert alert-danger">{{ infoError }}</div>
+              
+              <template v-else-if="infoData">
+                <div class="details-carousel" v-if="infoData.photos.length">
+                  <img
+                    v-for="(photo, i) in infoData.photos"
+                    :key="photo.id"
+                    :src="detailPhotoUrl(photo.path)"
+                    class="details-photo"
+                    :class="{ active: currentPhoto === i }"
+                    alt=""
+                    draggable="false"
+                  />
+                  <div class="photo-nav">
+                    <button
+                      v-for="(photo, i) in infoData.photos"
+                      :key="i"
+                      class="photo-dot"
+                      :class="{ active: currentPhoto === i }"
+                      @click.stop="currentPhoto = i"
+                      :aria-label="`Photo ${i + 1}`"
+                    ></button>
+                  </div>
+                  <button v-if="infoData.photos.length > 1" class="photo-arrow photo-arrow--prev" @click.stop="prevPhoto" aria-label="Photo précédente">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <button v-if="infoData.photos.length > 1" class="photo-arrow photo-arrow--next" @click.stop="nextPhoto" aria-label="Photo suivante">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+                
+                <div class="details-body">
+                  <div class="card-name-row">
+                    <h3 class="card-name">
+                      {{ infoData.profile.first_name }}{{ infoData.profile.last_name ? ' ' + infoData.profile.last_name : '' }}
+                      <span v-if="age(infoData.profile.birthdate)" class="card-age">{{ age(infoData.profile.birthdate) }}</span>
+                    </h3>
+                    <span v-if="isOnline(infoData.profile)" class="online-dot"></span>
+                  </div>
+                  
+                  <div v-if="infoData.profile.location_city" class="details-city">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ infoData.profile.location_city }}
+                  </div>
+                  
+                  <div class="details-status">
+                    <span class="status-badge" :class="isOnline(infoData.profile) ? 'status-badge--online' : 'status-badge--offline'">
+                      {{ isOnline(infoData.profile) ? 'En ligne' : 'Hors ligne' }}
+                    </span>
+                    <span v-if="infoData.profile.popularity_score" class="popularity-badge">⭐ {{ infoData.profile.popularity_score }}</span>
+                  </div>
+                  
+                  <div v-if="infoData.matched" class="details-indicator">💘 Vous êtes connectés ! 💘</div>
+                  <div v-else-if="infoData.liked" class="details-indicator details-indicator--liked">❤️ Vous avez liké ce profil</div>
+                  
+                  <div v-if="infoData.profile.bio" class="details-section">
+                    <h4>À propos</h4>
+                    <p>{{ infoData.profile.bio }}</p>
+                  </div>
+                  
+                  <div v-if="infoData.tags && infoData.tags.length" class="details-section">
+                    <h4>Centres d'intérêt</h4>
+                    <div class="details-tags">
+                      <span v-for="(tag, i) in infoData.tags" :key="i" class="tag-item">#{{ tag }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="details-section details-grid">
+                    <div v-if="infoData.profile.gender" class="details-item">
+                      <span class="details-label">Genre</span>
+                      <span class="details-value">{{ infoData.profile.gender }}</span>
+                    </div>
+                    <div v-if="infoData.profile.orientation" class="details-item">
+                      <span class="details-label">Orientation</span>
+                      <span class="details-value">{{ infoData.profile.orientation }}</span>
+                    </div>
+                    <div v-if="!isOnline(infoData.profile) && infoData.profile.last_seen_at" class="details-item">
+                      <span class="details-label">Dernière connexion</span>
+                      <span class="details-value">{{ formatDate(infoData.profile.last_seen_at) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
           </div>
         </div>
         
@@ -146,7 +241,7 @@
           <button class="action-btn action-btn--nope" @click="passCurrent" :disabled="actionPending" aria-label="Pass">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
-          <button class="action-btn action-btn--info" @click="viewProfile" :disabled="actionPending" aria-label="View profile">
+          <button class="action-btn action-btn--info" :class="{ 'action-btn--info-active': showInfo }" @click="toggleInfo" :disabled="actionPending" aria-label="Détails du profil">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           </button>
           <button class="action-btn action-btn--like" @click="likeCurrent" :disabled="actionPending" aria-label="Like">
@@ -181,10 +276,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { api, API_URL, friendlyError } from '../api.js';
-
-const router = useRouter();
 
 const profiles = ref([]);
 const currentIndex = ref(0);
@@ -220,6 +312,13 @@ const matchUser = ref('');
 const matchMyPhoto = ref('');
 const matchTheirPhoto = ref('');
 
+// Details overlay (toggle on/off)
+const showInfo = ref(false);
+const infoLoading = ref(false);
+const infoError = ref('');
+const infoData = ref(null);
+const currentPhoto = ref(0);
+
 async function loadProfiles() {
   loading.value = true;
   error.value = '';
@@ -244,6 +343,7 @@ async function loadProfiles() {
       )
     }));
     currentIndex.value = 0;
+    closeInfo();
     resetSwipe();
   } catch (err) {
     error.value = friendlyError(err) || 'Impossible de charger les profils';
@@ -309,6 +409,7 @@ const nextProfile = computed(() => sortedProfiles.value[currentIndex.value + 1] 
 
 watch([sortBy, sortedProfiles], () => {
   currentIndex.value = 0;
+  closeInfo();
   resetSwipe();
 });
 
@@ -353,10 +454,46 @@ function onPointerUp(e) {
 
 async function animateSwipe(dir) {
   isAnimating.value = true;
+  closeInfo();
   swipeX.value = dir === 'right' ? 600 : -600;
   await new Promise(r => setTimeout(r, 250));
   currentIndex.value++;
   resetSwipe();
+}
+
+function closeInfo() {
+  showInfo.value = false;
+  infoData.value = null;
+  infoError.value = '';
+  currentPhoto.value = 0;
+}
+
+async function toggleInfo() {
+  if (actionPending.value) return;
+  if (showInfo.value) {
+    closeInfo();
+    return;
+  }
+  const profile = currentProfile.value;
+  if (!profile) return;
+  currentPhoto.value = 0;
+  showInfo.value = true;
+  infoLoading.value = true;
+  infoError.value = '';
+  try {
+    const data = await api(`/profile/${profile.username}`);
+    infoData.value = {
+      profile: data.profile || profile,
+      photos: data.photos || [],
+      tags: data.tags || [],
+      liked: data.liked,
+      matched: data.matched
+    };
+  } catch (err) {
+    infoError.value = friendlyError(err) || 'Impossible de charger les détails';
+  } finally {
+    infoLoading.value = false;
+  }
 }
 
 async function likeCurrent() {
@@ -392,9 +529,25 @@ async function passCurrent() {
   actionPending.value = false;
 }
 
-function viewProfile() {
-  if (!currentProfile.value || actionPending.value) return;
-  router.push(`/users/${currentProfile.value.username}`);
+function detailPhotoUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${API_URL}${path}`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString();
+}
+
+function nextPhoto() {
+  if (!infoData.value?.photos?.length) return;
+  currentPhoto.value = (currentPhoto.value + 1) % infoData.value.photos.length;
+}
+
+function prevPhoto() {
+  if (!infoData.value?.photos?.length) return;
+  currentPhoto.value = (currentPhoto.value - 1 + infoData.value.photos.length) % infoData.value.photos.length;
 }
 
 onMounted(() => { loadProfiles(); });
@@ -514,6 +667,7 @@ onMounted(() => { loadProfiles(); });
   user-select: none;
 }
 .profile-card:active { cursor: grabbing; }
+.profile-card img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
 
 .profile-card--next {
   transform: scale(0.95) translateY(10px);
@@ -651,6 +805,197 @@ onMounted(() => { loadProfiles(); });
 
 .swipe-badge.is-visible { opacity: 1; }
 
+/* Details overlay (toggle on/off) */
+.card-details {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(20,10,20,0.88) 0%, rgba(20,10,20,0.96) 100%);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.details-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.details-close:hover { background: #fd267a; }
+
+.details-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.details-error { margin: 40px 8px 0; }
+
+.details-carousel {
+  position: relative;
+  height: 280px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+  margin-bottom: 16px;
+}
+
+.details-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.details-photo.active { opacity: 1; }
+
+.photo-nav {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  z-index: 2;
+}
+
+.photo-dot {
+  width: 26px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.5);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.photo-dot.active { background: #fff; }
+
+.photo-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.3);
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s;
+}
+
+.photo-arrow:hover { background: rgba(0,0,0,0.5); }
+.photo-arrow--prev { left: 8px; }
+.photo-arrow--next { right: 8px; }
+
+.details-body { padding: 0 4px 8px; }
+
+.details-city {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+.details-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.status-badge {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.status-badge--online { background: #22c55e; color: #fff; }
+.status-badge--offline { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.7); }
+
+.popularity-badge { color: #fbbf24; font-weight: 700; font-size: 0.85rem; }
+
+.details-indicator {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: linear-gradient(135deg, #fd267a, #ff6036);
+  margin-bottom: 12px;
+}
+
+.details-indicator--liked { background: #22c55e; }
+
+.details-section { margin-bottom: 16px; }
+
+.details-section h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.65;
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.details-section p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.details-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.tag-item {
+  background: rgba(253, 38, 122, 0.25);
+  border: 1px solid rgba(253, 38, 122, 0.6);
+  color: #fff;
+  padding: 3px 12px;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.details-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.details-item {
+  background: rgba(255,255,255,0.1);
+  padding: 8px 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.details-label { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.5px; }
+.details-value { font-size: 0.85rem; font-weight: 700; }
+
 /* Action buttons */
 .action-buttons {
   display: flex;
@@ -686,6 +1031,12 @@ onMounted(() => { loadProfiles(); });
   width: 46px; height: 46px; 
   color: #6366f1; 
   border: 2px solid #e0e7ff; 
+}
+
+.action-btn--info-active {
+  background: #6366f1;
+  color: #fff;
+  border-color: #6366f1;
 }
 
 .action-btn--like { color: #22c55e; border: 2px solid #dcfce7; }
@@ -770,6 +1121,7 @@ onMounted(() => { loadProfiles(); });
   .card-image-wrapper { height: 340px; }
   .action-btn { width: 52px; height: 52px; }
   .action-btn--info { width: 40px; height: 40px; }
+  .details-carousel { height: 220px; }
   .match-title { font-size: 2rem; }
   .match-photo { width: 90px; height: 90px; }
 }
