@@ -8,6 +8,10 @@ use function App\nowUtc;
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->safeLoad();
 
+if (!isset($_ENV['DB_USER'])) {
+    fwrite(STDERR, "Attention : .env non chargé, connexion avec les identifiants par défaut.\n");
+}
+
 $host = $_ENV['DB_HOST'] ?? 'localhost';
 $port = $_ENV['DB_PORT'] ?? '5432';
 $name = $_ENV['DB_NAME'] ?? 'matcha';
@@ -21,11 +25,11 @@ $pdo = new \PDO(
     [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC]
 );
 
-$firstNames = ['Alex', 'Sam', 'Jamie', 'Taylor', 'Jordan', 'Casey', 'Morgan', 'Riley', 'Avery', 'Parker'];
-$lastNames = ['Martin', 'Bernard', 'Thomas', 'Petit', 'Robert', 'Richard', 'Durand', 'Dubois', 'Moreau', 'Laurent'];
+require_once __DIR__ . '/fixtures.php';
+
 $genders = ['male', 'female', 'non_binary'];
-$orientations = ['heterosexual', 'homosexual', 'bisexual'];
-$tags = ['vegan', 'geek', 'travel', 'sports', 'music', 'movies', 'gaming', 'art', 'coding', 'fitness', 'foodie', 'books'];
+$orientations = $fixtureDataForConsumers['orientations'];
+$tags = $fixtureDataForConsumers['tags'];
 
 $pdo->beginTransaction();
 $pdo->exec('TRUNCATE TABLE notifications, messages, passes, matches, likes, user_tags, tags, photos, profiles, email_verification_tokens, password_reset_tokens, profile_views, blocks, reports, users RESTART IDENTITY CASCADE');
@@ -54,18 +58,15 @@ $photoStmt = $pdo->prepare(
 $userTagStmt = $pdo->prepare('INSERT INTO user_tags (user_id, tag_id) VALUES (:user_id, :tag_id)');
 
 for ($i = 1; $i <= 500; $i++) {
-    $first = $firstNames[array_rand($firstNames)];
-    $last = $lastNames[array_rand($lastNames)];
     $gender = $genders[array_rand($genders)];
     $orientation = $orientations[array_rand($orientations)];
-    $lat = 48.8566 + (mt_rand(-5000, 5000) / 10000);
-    $lng = 2.3522 + (mt_rand(-5000, 5000) / 10000);
-    $birthYear = mt_rand(1985, 2004);
-    $birthdate = sprintf('%d-%02d-%02d', $birthYear, mt_rand(1, 12), mt_rand(1, 28));
+    $identity = generateIdentity($gender);
+    $first = $identity['first'];
+    $last = $identity['last'];
 
     $userStmt->execute([
-        ':email' => "user{$i}@example.com",
-        ':username' => "user{$i}",
+        ':email' => strtolower(slugifyName($first) . '.' . slugifyName($last) . $i) . '@example.com',
+        ':username' => strtolower(slugifyName($first) . '.' . slugifyName($last) . $i),
         ':first_name' => $first,
         ':last_name' => $last,
         ':password_hash' => password_hash('Matcha#' . $i, PASSWORD_BCRYPT),
@@ -78,11 +79,11 @@ for ($i = 1; $i <= 500; $i++) {
         ':user_id' => $userId,
         ':gender' => $gender,
         ':orientation' => $orientation,
-        ':bio' => "Hi, I'm {$first} and I love {$tags[array_rand($tags)]}.",
-        ':location_city' => 'Paris',
-        ':location_lat' => $lat,
-        ':location_lng' => $lng,
-        ':birthdate' => $birthdate,
+        ':bio' => $identity['bio'],
+        ':location_city' => $identity['city'],
+        ':location_lat' => $identity['lat'],
+        ':location_lng' => $identity['lng'],
+        ':birthdate' => $identity['birthdate'],
         ':created_at' => nowUtc(),
         ':updated_at' => nowUtc()
     ]);
