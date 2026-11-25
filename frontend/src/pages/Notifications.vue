@@ -28,7 +28,7 @@
         </div>
         <div class="notif-body">
           <div class="notif-text">
-            <strong>{{ item.actor_username }}</strong>
+            <strong>{{ item.actor_first_name || item.actor_username }}</strong>
             <span v-if="item.type === 'like'"> a liké ton profil</span>
             <span v-else-if="item.type === 'match'"> a matché avec toi !</span>
             <span v-else-if="item.type === 'message'"> t'a envoyé un message</span>

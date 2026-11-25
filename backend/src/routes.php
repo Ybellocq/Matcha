@@ -1015,7 +1015,8 @@ HTML;
             closeSession();
             $userId = currentUserId();
             $stmt = db()->prepare(
-                'SELECT n.id, n.type, n.actor_id, n.metadata, n.created_at, n.read_at, u.username AS actor_username
+                'SELECT n.id, n.type, n.actor_id, n.metadata, n.created_at, n.read_at,
+                        u.username AS actor_username, u.first_name AS actor_first_name
                  FROM notifications n
                  JOIN users u ON u.id = n.actor_id
                  WHERE n.user_id = :id

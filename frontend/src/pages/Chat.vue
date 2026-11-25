@@ -3,7 +3,7 @@
     <!-- Match list sidebar -->
     <div class="chat-sidebar">
       <h4 class="chat-sidebar-title">Matchs</h4>
-      <ul class="list-group list-group-flush">
+      <ul class="list-group list-group-flush chat-contact-list">
         <li v-if="matches.length === 0" class="list-group-item text-muted text-center py-3">
           Aucun match pour l'instant. Va swiper !
         </li>
@@ -21,7 +21,7 @@
               class="avatar-img"
               alt=""
             />
-            <span v-else class="avatar-placeholder">{{ match.username[0]?.toUpperCase() }}</span>
+            <span v-else class="avatar-placeholder">{{ match.first_name[0]?.toUpperCase() }}</span>
           </div>
           <div class="contact-info">
             <div class="contact-name">{{ match.first_name }}</div>
@@ -49,10 +49,10 @@
         <div class="chat-header">
           <div class="chat-header-user">
             <div class="contact-avatar">
-              <span class="avatar-placeholder">{{ activeUser[0]?.toUpperCase() }}</span>
+              <span class="avatar-placeholder">{{ activeName[0]?.toUpperCase() }}</span>
             </div>
             <div>
-              <div class="fw-bold">{{ activeUser }}</div>
+              <div class="fw-bold">{{ activeName }}</div>
             </div>
           </div>
         </div>
@@ -103,6 +103,9 @@ const matches = ref([]);
 const messages = ref([]);
 const newMessage = ref('');
 const activeUser = ref(route.params.username || '');
+const activeName = computed(
+  () => matches.value.find((m) => m.username === activeUser.value)?.first_name || activeUser.value
+);
 const userId = computed(() => session.user?.id);
 const messagesContainer = ref(null);
 let intervalId;
@@ -203,6 +206,7 @@ function formatTime(dateStr) {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  min-height: 0;
 }
 
 .chat-sidebar-title {
@@ -211,6 +215,12 @@ function formatTime(dateStr) {
   font-size: 1.1rem;
   font-weight: 800;
   color: var(--text);
+  flex-shrink: 0;
+}
+
+.chat-contact-list {
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .chat-contact {

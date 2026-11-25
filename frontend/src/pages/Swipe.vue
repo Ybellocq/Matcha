@@ -257,7 +257,7 @@
         <div v-if="showMatch" class="match-overlay" @click="showMatch = false">
           <div class="match-modal">
             <h1 class="match-title">C'est un Match !</h1>
-            <p class="match-subtitle">Tu as matché avec {{ matchUser }}</p>
+            <p class="match-subtitle">Tu as matché avec {{ matchName }}</p>
             <div class="match-photos">
               <img :src="matchMyPhoto" class="match-photo" alt="You" />
               <div class="match-heart">💘</div>
@@ -309,6 +309,7 @@ const swipeThreshold = 100;
 // Match popup
 const showMatch = ref(false);
 const matchUser = ref('');
+const matchName = ref('');
 const matchMyPhoto = ref('');
 const matchTheirPhoto = ref('');
 
@@ -507,6 +508,7 @@ async function likeCurrent() {
     // Check if it was a mutual match
     if (result.matched) {
       matchUser.value = profile.username;
+      matchName.value = profile.first_name || profile.username;
       matchMyPhoto.value = myPhotoUrl.value;
       matchTheirPhoto.value = photoUrl(profile.main_photo_path, profile);
       setTimeout(() => { showMatch.value = true; }, 400);
