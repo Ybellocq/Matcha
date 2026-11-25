@@ -20,6 +20,8 @@
   "scripts": {
     "start": "PHP_CLI_SERVER_WORKERS=8 php -S localhost:8000 -t public",
     "mails": "tail -60 storage/logs/mail.log",
-    "matches": "php db/seed_matches.php"
+    "matches": "php db/seed_matches.php",
+    "coherence": "php db/coherence.php",
+    "checkup": "php db/checkup.php"
   }
 }

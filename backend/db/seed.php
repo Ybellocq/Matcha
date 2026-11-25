@@ -117,16 +117,29 @@ for ($i = 0; $i < 1500; $i++) {
     $likeStmt->execute([':liker' => $liker, ':liked' => $liked, ':created_at' => nowUtc()]);
 }
 
+// Les matchs naissent toujours d'un like mutuel, comme dans le vrai parcours.
+// On prend des paires de likes existantes, on crée le like réciproque puis le match.
+$pairStmt = $pdo->prepare('SELECT liker_id, liked_id FROM likes ORDER BY random() LIMIT 300');
+$pairStmt->execute();
+$recipStmt = $pdo->prepare('INSERT INTO likes (liker_id, liked_id, created_at) VALUES (:liker, :liked, :created_at) ON CONFLICT DO NOTHING');
 $matchStmt = $pdo->prepare('INSERT INTO matches (user_one_id, user_two_id, created_at) VALUES (:a, :b, :created_at) ON CONFLICT DO NOTHING');
-for ($i = 0; $i < 300; $i++) {
-    $a = mt_rand(1, 500);
-    $b = mt_rand(1, 500);
+$notifyStmt = $pdo->prepare(
+    'INSERT INTO notifications (user_id, type, actor_id, metadata, created_at, read_at) VALUES (:user_id, :type, :actor_id, NULL, :created_at, :read_at)'
+);
+while ($pair = $pairStmt->fetch(\PDO::FETCH_ASSOC)) {
+    $a = (int) $pair['liker_id'];
+    $b = (int) $pair['liked_id'];
     if ($a === $b) {
         continue;
     }
-    $userOne = min($a, $b);
-    $userTwo = max($a, $b);
-    $matchStmt->execute([':a' => $userOne, ':b' => $userTwo, ':created_at' => nowUtc()]);
+    $recipStmt->execute([':liker' => $b, ':liked' => $a, ':created_at' => nowUtc()]);
+    $matchTs = nowUtc();
+    $matchStmt->execute([':a' => min($a, $b), ':b' => max($a, $b), ':created_at' => $matchTs]);
+    if ($matchStmt->rowCount() === 0) {
+        continue;
+    }
+    $notifyStmt->execute([':user_id' => $b, ':type' => 'match', ':actor_id' => $a, ':created_at' => $matchTs, ':read_at' => $matchTs]);
+    $notifyStmt->execute([':user_id' => $a, ':type' => 'match', ':actor_id' => $b, ':created_at' => $matchTs, ':read_at' => $matchTs]);
 }
 
 $viewStmt = $pdo->prepare('INSERT INTO profile_views (viewer_id, viewed_id, created_at) VALUES (:viewer, :viewed, :created_at)');

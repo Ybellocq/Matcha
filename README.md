@@ -29,6 +29,8 @@ psql -U postgres -d matcha -f db/schema.sql
 php db/seed.php               # Crée 500 profils factices
 php db/seed_matches.php       # Faux matchs + conversations pour le 1er compte enregistré (ou : `php db/seed_matches.php <email|username> [n]`, défaut 8)
 php db/humanize_seed.php      # Rajeunit les profils factices existants : prénoms mixtes réalistes, 18 villes géolocalisées, bios FR (préserve matchs et messages)
+php db/coherence.php          # Répare les incohérences like/match en base (match sans like mutuel, like mutuel sans match) + `composer coherence`
+composer checkup              # Suite de tests end-to-end sur l'API (46 vérifications : comptes, deck, likes, matchs, chat, blocage, sécurité)
 composer start                # Tourne sur localhost:8000
 ```
 
